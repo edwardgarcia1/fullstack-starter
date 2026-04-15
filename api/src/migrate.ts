@@ -1,12 +1,8 @@
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Client } from "pg";
 import { migrate } from "drizzle-orm/node-postgres/migrator";
-import * as dotenv from "dotenv";
 import { users, type NewUser } from "./modules/users/schema";
 import { eq } from "drizzle-orm";
-
-
-dotenv.config();
 
 const client = new Client({
 	host: process.env.DB_HOST || "localhost",

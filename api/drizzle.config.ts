@@ -1,7 +1,4 @@
 import { defineConfig } from "drizzle-kit";
-import * as dotenv from "dotenv";
-
-dotenv.config();
 
 const DB_NAME = process.env.DB_NAME;
 if (!DB_NAME) {
