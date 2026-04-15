@@ -8,6 +8,7 @@ import {
 } from "./service";
 import { jwtMiddleware } from "../../middlewares/jwt";
 import { rateLimitMiddleware } from "../../middlewares/rateLimit";
+import { BadRequestError, UnauthorizedError, ForbiddenError, NotFoundError } from "../../middlewares/error";
 
 export const userRoutes = new Elysia()
 	.use(rateLimitMiddleware)
@@ -16,7 +17,7 @@ export const userRoutes = new Elysia()
 		"/api/register",
 		async ({ body, rateLimit, limited }) => {
 			if (limited) {
-				return { error: "Rate limit exceeded", retryAfter: rateLimit.reset };
+				throw new BadRequestError("Rate limit exceeded");
 			}
 
 			const bodyTyped = body as {
@@ -25,19 +26,12 @@ export const userRoutes = new Elysia()
 				name: string;
 			};
 
-			try {
-				const existingUser = await findUserByUsername(bodyTyped.username);
-				if (existingUser) {
-					return { error: "Username already exists" };
-				}
-				const user = await createUser(bodyTyped);
-				return { message: "User registered successfully", userId: user.id };
-			} catch (error) {
-				console.error("Registration error:", error);
-				return {
-					error: error instanceof Error ? error.message : "Registration failed",
-				};
+			const existingUser = await findUserByUsername(bodyTyped.username);
+			if (existingUser) {
+				throw new BadRequestError("Username already exists");
 			}
+			const user = await createUser(bodyTyped);
+			return { message: "User registered successfully", userId: user.id };
 		},
 		{
 			body: t.Object({
@@ -51,41 +45,36 @@ export const userRoutes = new Elysia()
 		"/api/login",
 		async ({ body, rateLimit, limited, jwt }) => {
 			if (limited) {
-				return { error: "Rate limit exceeded", retryAfter: rateLimit.reset };
+				throw new BadRequestError("Rate limit exceeded");
 			}
 
 			const bodyTyped = body as { username: string; password: string };
 
-			try {
-				const user = await findUserByUsername(bodyTyped.username);
-				if (!user) {
-					return { error: "Invalid credentials" };
-				}
-				const isValid = await validatePassword(
-					bodyTyped.password,
-					user.password,
-				);
-				if (!isValid) {
-					return { error: "Invalid credentials" };
-				}
-				const token = await jwt.sign({
+			const user = await findUserByUsername(bodyTyped.username);
+			if (!user) {
+				throw new UnauthorizedError("Invalid credentials");
+			}
+			const isValid = await validatePassword(
+				bodyTyped.password,
+				user.password,
+			);
+			if (!isValid) {
+				throw new UnauthorizedError("Invalid credentials");
+			}
+			const token = await jwt.sign({
+				id: user.id,
+				username: user.username,
+				role: user.role,
+			});
+			return {
+				token,
+				user: {
 					id: user.id,
 					username: user.username,
+					name: user.name,
 					role: user.role,
-				});
-				return {
-					token,
-					user: {
-						id: user.id,
-						username: user.username,
-						name: user.name,
-						role: user.role,
-					},
-				};
-			} catch (error) {
-				console.error("Login error:", error);
-				return { error: "Login failed" };
-			}
+				},
+			};
 		},
 		{
 			body: t.Object({
@@ -97,14 +86,14 @@ export const userRoutes = new Elysia()
 	.post("/api/logout", async ({ jwt, headers }) => {
 		const authHeader = headers.authorization;
 		if (!authHeader || !authHeader.startsWith("Bearer ")) {
-			return { error: "Unauthorized" };
+			throw new UnauthorizedError();
 		}
 
 		const token = authHeader.substring(7);
 		const decodedUser = await jwt.verify(token);
 
 		if (!decodedUser) {
-			return { error: "Unauthorized" };
+			throw new UnauthorizedError();
 		}
 
 		// In a real application, you would add the token to a blacklist
@@ -112,56 +101,46 @@ export const userRoutes = new Elysia()
 	})
 	.get("/api/users", async ({ jwt, headers, rateLimit, limited }) => {
 		if (limited) {
-			return { error: "Rate limit exceeded", retryAfter: rateLimit.reset };
+			throw new BadRequestError("Rate limit exceeded");
 		}
 
 		const authHeader = headers.authorization;
 		if (!authHeader || !authHeader.startsWith("Bearer ")) {
-			return { error: "Unauthorized" };
+			throw new UnauthorizedError();
 		}
 
 		const token = authHeader.substring(7);
 		const decodedUser = await jwt.verify(token);
 
 		if (!decodedUser) {
-			return { error: "Unauthorized" };
+			throw new UnauthorizedError();
 		}
 
 		// Role-based access control
 		if ((decodedUser as any).role !== "superadmin") {
-			return { error: "Insufficient permissions" };
+			throw new ForbiddenError("Insufficient permissions");
 		}
 
-		try {
-			const users = await getAllUsers();
-			return users.map(({ password, ...rest }) => rest);
-		} catch (error) {
-			console.error("Get users error:", error);
-			return { error: "Failed to fetch users" };
-		}
+		const users = await getAllUsers();
+		return users.map(({ password, ...rest }) => rest);
 	})
 	.get("/api/profile", async ({ jwt, headers }) => {
 		const authHeader = headers.authorization;
 		if (!authHeader || !authHeader.startsWith("Bearer ")) {
-			return { error: "Unauthorized" };
+			throw new UnauthorizedError();
 		}
 
 		const token = authHeader.substring(7);
 		const decodedUser = await jwt.verify(token);
 
 		if (!decodedUser) {
-			return { error: "Unauthorized" };
+			throw new UnauthorizedError();
 		}
 
-		try {
-			const userProfile = await findUserById((decodedUser as any).id);
-			if (!userProfile) {
-				return { error: "User not found" };
-			}
-			const { password, ...rest } = userProfile;
-			return rest;
-		} catch (error) {
-			console.error("Get profile error:", error);
-			return { error: "Failed to fetch profile" };
+		const userProfile = await findUserById((decodedUser as any).id);
+		if (!userProfile) {
+			throw new NotFoundError("User not found");
 		}
+		const { password, ...rest } = userProfile;
+		return rest;
 	});

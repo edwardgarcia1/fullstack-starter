@@ -4,9 +4,10 @@
 	"type": "module",
 	"scripts": {
 		"dev": "bun --watch src/index.ts",
-		"build": "bun build src/index.ts",
+		"build": "bun build src/index.ts --target=bun",
 		"start": "NODE_ENV=production bun src/index.ts",
 		"test": "bun test",
+		"typecheck": "bun x tsc --noEmit",
 		"db:generate": "drizzle-kit generate",
 		"db:migrate": "bun src/migrate.ts"
 	},
