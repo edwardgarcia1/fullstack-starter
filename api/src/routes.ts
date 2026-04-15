@@ -1,7 +1,9 @@
 import { Elysia } from "elysia";
-import { userRoutes } from "./modules/users/routes";
+import { authRoutes } from "./modules/users/auth.routes";
+import { userRoutes } from "./modules/users/users.routes";
 import { errorMiddleware } from "./middlewares/error";
 
-export const routes = new Elysia()
-  .use(errorMiddleware)
-  .use(userRoutes);
+export const routes = new Elysia({ prefix: "/api" })
+	.use(errorMiddleware)
+	.use(authRoutes)
+	.use(userRoutes);
