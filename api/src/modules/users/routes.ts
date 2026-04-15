@@ -6,13 +6,14 @@ import {
 	validatePassword,
 	getAllUsers,
 } from "./service";
-import { jwtMiddleware } from "../../middlewares/jwt";
+import { jwtMiddleware, refreshTokenMiddleware } from "../../middlewares/jwt";
 import { rateLimitMiddleware } from "../../middlewares/rateLimit";
 import { BadRequestError, UnauthorizedError, ForbiddenError, NotFoundError } from "../../middlewares/error";
 
 export const userRoutes = new Elysia()
 	.use(rateLimitMiddleware)
 	.use(jwtMiddleware)
+	.use(refreshTokenMiddleware)
 	.post(
 		"/api/register",
 		async ({ body, rateLimit, limited }) => {
@@ -43,7 +44,7 @@ export const userRoutes = new Elysia()
 	)
 	.post(
 		"/api/login",
-		async ({ body, rateLimit, limited, jwt }) => {
+		async ({ body, rateLimit, limited, jwt, refreshJwt }) => {
 			if (limited) {
 				throw new BadRequestError("Rate limit exceeded");
 			}
@@ -61,13 +62,18 @@ export const userRoutes = new Elysia()
 			if (!isValid) {
 				throw new UnauthorizedError("Invalid credentials");
 			}
-			const token = await jwt.sign({
+			const accessToken = await jwt.sign({
 				id: user.id,
 				username: user.username,
 				role: user.role,
 			});
+			const refreshToken = await refreshJwt.sign({
+				userId: user.id,
+				tokenId: Math.random().toString(36).substring(7),
+			});
 			return {
-				token,
+				accessToken,
+				refreshToken,
 				user: {
 					id: user.id,
 					username: user.username,
@@ -143,4 +149,84 @@ export const userRoutes = new Elysia()
 		}
 		const { password, ...rest } = userProfile;
 		return rest;
-	});
+	})
+	.post(
+		"/api/refresh",
+		async ({ body, refreshJwt, jwt }) => {
+			const bodyTyped = body as { refreshToken: string };
+
+			if (!bodyTyped.refreshToken) {
+				throw new UnauthorizedError("Refresh token required");
+			}
+
+			const decodedRefresh = await refreshJwt.verify(bodyTyped.refreshToken);
+			if (!decodedRefresh) {
+				throw new UnauthorizedError("Invalid refresh token");
+			}
+
+			const userId = (decodedRefresh as any).userId;
+			const user = await findUserById(userId);
+			if (!user) {
+				throw new UnauthorizedError("User not found");
+			}
+
+			const newAccessToken = await jwt.sign({
+				id: user.id,
+				username: user.username,
+				role: user.role,
+			});
+
+			const newRefreshToken = await refreshJwt.sign({
+				userId: user.id,
+				tokenId: Math.random().toString(36).substring(7),
+			});
+
+			return {
+				accessToken: newAccessToken,
+				refreshToken: newRefreshToken,
+				user: {
+					id: user.id,
+					username: user.username,
+					name: user.name,
+					role: user.role,
+				},
+			};
+		},
+		{
+			body: t.Object({
+				refreshToken: t.String(),
+			}),
+		},
+	)
+	.post(
+		"/api/access",
+		async ({ body, jwt }) => {
+			const bodyTyped = body as { token: string };
+
+			if (!bodyTyped.token) {
+				throw new UnauthorizedError("Token required");
+			}
+
+			const decoded = await jwt.verify(bodyTyped.token);
+			if (!decoded) {
+				throw new UnauthorizedError("Invalid token");
+			}
+
+			const userId = (decoded as any).id;
+			const user = await findUserById(userId);
+			if (!user) {
+				throw new UnauthorizedError("User not found");
+			}
+
+			const { password, ...userWithoutPassword } = user;
+			return {
+				accessToken: bodyTyped.token,
+				user: userWithoutPassword,
+			};
+		},
+		{
+			body: t.Object({
+				token: t.String(),
+			}),
+		},
+	);
