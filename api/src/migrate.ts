@@ -4,7 +4,7 @@ import { migrate } from "drizzle-orm/node-postgres/migrator";
 import * as dotenv from "dotenv";
 import { users, type NewUser } from "./modules/users/schema";
 import { eq } from "drizzle-orm";
-import * as bcrypt from "bcryptjs";
+
 
 dotenv.config();
 
@@ -33,9 +33,12 @@ try {
 
 	if (!existingUser) {
 		console.log("Creating superadmin user...");
-		const hashedPassword = await bcrypt.hash(
+		const hashedPassword = await Bun.password.hash(
 			process.env.SUPERADMIN_PASSWORD || "Passw0rd",
-			10,
+			{
+				algorithm: "bcrypt",
+				cost: 10,
+			},
 		);
 		const superadminUser: NewUser = {
 			username: process.env.SUPERADMIN_USERNAME || "superadmin",

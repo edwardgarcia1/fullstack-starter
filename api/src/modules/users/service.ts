@@ -1,7 +1,6 @@
 import { db } from "../../config/db";
 import { users, type NewUser } from "./schema";
 import { eq } from "drizzle-orm";
-import * as bcrypt from "bcryptjs";
 
 const validatePasswordStrength = (password: string): { valid: boolean; error?: string } => {
   if (password.length < 8) {
@@ -25,7 +24,10 @@ export const createUser = async (user: NewUser) => {
     throw new Error(passwordValidation.error);
   }
 
-  const hashedPassword = await bcrypt.hash(user.password, 10);
+  const hashedPassword = await Bun.password.hash(user.password, {
+        algorithm: "bcrypt",
+        cost: 10,
+      });
   const newUser = { ...user, password: hashedPassword };
   const [createdUser] = await db.insert(users).values(newUser).returning();
   if (!createdUser) {
@@ -49,5 +51,5 @@ export const getAllUsers = async () => {
 };
 
 export const validatePassword = async (password: string, hashedPassword: string) => {
-  return bcrypt.compare(password, hashedPassword);
+  return Bun.password.verify(password, hashedPassword);
 };
