@@ -85,6 +85,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({ onMenuClick, drawerWidth, current
           }}
           open={Boolean(anchorEl)}
           onClose={handleMenuClose}
+          container={document.body}
         >
           <MenuItem onClick={handleMenuClose}>
             <ListItemIcon>
