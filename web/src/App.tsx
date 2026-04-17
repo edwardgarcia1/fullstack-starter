@@ -1,13 +1,13 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './contexts/AuthProvider';
-import { useAuth } from './hooks/useAuth';
+import { useAuthStore } from './store/useAuthStore';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Home from './pages/Home';
 
 const AppRoutes: React.FC = () => {
-  const { isAuthenticated } = useAuth();
+  const user = useAuthStore((state) => state.user);
+  const isAuthenticated = !!user;
 
   return (
     <Routes>
@@ -25,9 +25,7 @@ const AppRoutes: React.FC = () => {
 function App() {
   return (
     <Router>
-      <AuthProvider>
-        <AppRoutes />
-      </AuthProvider>
+      <AppRoutes />
     </Router>
   );
 }

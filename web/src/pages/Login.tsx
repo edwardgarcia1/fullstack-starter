@@ -11,7 +11,7 @@ import {
 	Link,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../hooks/useAuth";
+import { useAuthStore } from "../store/useAuthStore";
 import { apiRequest } from "../utils/api";
 
 interface LoginResponse {
@@ -31,7 +31,7 @@ const Login: React.FC = () => {
 	const [error, setError] = useState<string | null>(null);
 	const [loading, setLoading] = useState(false);
 	const navigate = useNavigate();
-	const { login } = useAuth();
+	const login = useAuthStore((state) => state.login);
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();

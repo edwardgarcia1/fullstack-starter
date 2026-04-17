@@ -1,10 +1,10 @@
 import React from 'react';
 import { Typography, Box } from '@mui/material';
-import { useAuth } from '../hooks/useAuth';
+import { useAuthStore } from '../store/useAuthStore';
 import AppLayout from '../layouts/AppLayout';
 
 const Home: React.FC = () => {
-  const { user } = useAuth();
+  const user = useAuthStore((state) => state.user);
 
   return (
     <AppLayout currentTab="Dashboard" appName="Fullstack Starter">
