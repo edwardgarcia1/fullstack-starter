@@ -39,7 +39,7 @@ function App() {
 
 	useEffect(() => {
 		checkAuth();
-	}, []);
+	}, [checkAuth]);
 
 	return (
 		<Router>

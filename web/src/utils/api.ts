@@ -9,6 +9,10 @@ interface RequestOptions extends Omit<RequestInit, "body" | "method"> {
 	method?: HttpMethod;
 }
 
+const refreshToken = async (): Promise<void> => {
+	await apiRequest("/auth/refresh", { method: "POST" });
+};
+
 const apiRequest = async <T>(
 	endpoint: string,
 	options: RequestOptions = {},
@@ -37,7 +41,17 @@ const apiRequest = async <T>(
 		}
 	}
 
-	const response = await fetch(url, config);
+	let response = await fetch(url, config);
+
+	if (response.status === 401) {
+		try {
+			await refreshToken();
+			response = await fetch(url, config);
+		} catch {
+			// If refresh fails, logout or handle as needed
+			throw new Error("Session expired. Please login again.");
+		}
+	}
 
 	if (!response.ok) {
 		const errorData = await response.json().catch(() => ({}));
