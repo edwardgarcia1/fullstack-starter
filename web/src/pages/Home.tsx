@@ -71,7 +71,7 @@ const Home: React.FC = () => {
   );
 
   return (
-    <Box sx={{ display: 'flex' }}>
+    <Box sx={{ display: 'flex', height: '100vh', padding: 'env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)' }}>
       <CssBaseline />
       <AppBar
         position="fixed"
@@ -164,7 +164,7 @@ const Home: React.FC = () => {
       </Box>
       <Box
         component="main"
-        sx={{ flexGrow: 1, p: 3, width: { md: `calc(100% - ${drawerWidth}px)` } }}
+        sx={{ flexGrow: 1, p: 3, width: { md: `calc(100% - ${drawerWidth}px)` }, overflowX: 'hidden' }}
       >
         <Toolbar />
         <Typography component="p" sx={{ mb: 2 }}>

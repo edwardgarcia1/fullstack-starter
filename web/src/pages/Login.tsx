@@ -1,109 +1,141 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
-  Box,
-  Button,
-  Container,
-  CssBaseline,
-  TextField,
-  Typography,
-  Paper,
-  Alert,
-  Link,
-} from '@mui/material';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
-import { apiRequest } from '../utils/api';
+	Box,
+	Button,
+	Container,
+	CssBaseline,
+	TextField,
+	Typography,
+	Paper,
+	Alert,
+	Link,
+} from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
+import { apiRequest } from "../utils/api";
 
 interface LoginResponse {
-  accessToken: string;
-  refreshToken: string;
-  user: {
-    id: string;
-    username: string;
-    name: string;
-    role: string;
-  };
+	accessToken: string;
+	refreshToken: string;
+	user: {
+		id: string;
+		username: string;
+		name: string;
+		role: string;
+	};
 }
 
 const Login: React.FC = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
-  const { login } = useAuth();
+	const [username, setUsername] = useState("");
+	const [password, setPassword] = useState("");
+	const [error, setError] = useState<string | null>(null);
+	const [loading, setLoading] = useState(false);
+	const navigate = useNavigate();
+	const { login } = useAuth();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setLoading(true);
+	const handleSubmit = async (e: React.FormEvent) => {
+		e.preventDefault();
+		setError(null);
+		setLoading(true);
 
-    try {
-      const response = await apiRequest<LoginResponse>('/auth/login', {
-        method: 'POST',
-        body: { username, password },
-      });
+		try {
+			const response = await apiRequest<LoginResponse>("/auth/login", {
+				method: "POST",
+				body: { username, password },
+			});
 
-      login(response, response.user);
-      navigate('/');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed');
-    } finally {
-      setLoading(false);
-    }
-  };
+			login(response, response.user);
+			navigate("/");
+		} catch (err) {
+			setError(err instanceof Error ? err.message : "Login failed");
+		} finally {
+			setLoading(false);
+		}
+	};
 
-  return (
-    <Container component="main" maxWidth="xs">
-      <CssBaseline />
-      <Paper elevation={3} sx={{ mt: 8, p: 4, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <Typography component="h1" variant="h5">
-          Sign In
-        </Typography>
-        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
-          {error && <Alert severity="error" sx={{ width: '100%', mb: 2 }}>{error}</Alert>}
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            id="username"
-            label="Username"
-            name="username"
-            autoComplete="username"
-            autoFocus
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-          />
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            name="password"
-            label="Password"
-            type="password"
-            id="password"
-            autoComplete="current-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            sx={{ mt: 3, mb: 2 }}
-            disabled={loading}
-          >
-            {loading ? 'Signing In…' : 'Sign In'}
-          </Button>
-          <Box sx={{ textAlign: 'center' }}>
-            <Link href="/register" variant="body2">
-              {"Don't have an account? Sign Up"}
-            </Link>
-          </Box>
-        </Box>
-      </Paper>
-    </Container>
-  );
+	return (
+		<Box
+			sx={{
+				display: "flex",
+				minHeight: "100vh",
+				padding:
+					"env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)",
+			}}
+		>
+			<Container
+				component="main"
+				maxWidth="xs"
+				sx={{
+					mt: 2,
+					mb: 2,
+					display: "flex",
+					flexDirection: "column",
+					justifyContent: "center",
+					flex: 1,
+				}}
+			>
+				<CssBaseline />
+				<Paper
+					elevation={3}
+					sx={{
+						p: 4,
+						display: "flex",
+						flexDirection: "column",
+						alignItems: "center",
+					}}
+				>
+					<Typography component="h1" variant="h5">
+						Sign In
+					</Typography>
+					<Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
+						{error && (
+							<Alert severity="error" sx={{ width: "100%", mb: 2 }}>
+								{error}
+							</Alert>
+						)}
+						<TextField
+							margin="normal"
+							required
+							fullWidth
+							id="username"
+							label="Username"
+							name="username"
+							autoComplete="username"
+							autoFocus
+							value={username}
+							onChange={(e) => setUsername(e.target.value)}
+						/>
+						<TextField
+							margin="normal"
+							required
+							fullWidth
+							name="password"
+							label="Password"
+							type="password"
+							id="password"
+							autoComplete="current-password"
+							value={password}
+							onChange={(e) => setPassword(e.target.value)}
+						/>
+						<Button
+							type="submit"
+							fullWidth
+							variant="contained"
+							sx={{ mt: 3, mb: 2 }}
+							disabled={loading}
+						>
+							{loading ? "Signing In…" : "Sign In"}
+						</Button>
+						<Box sx={{ textAlign: "center" }}>
+							<Link href="/register" variant="body2">
+								{"Don't have an account? Sign Up"}
+							</Link>
+						</Box>
+					</Box>
+				</Paper>
+			</Container>
+		</Box>
+	);
 };
 
 export default Login;
