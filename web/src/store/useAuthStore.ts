@@ -1,37 +1,44 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { create } from "zustand";
+import { api } from "../utils/api";
 
 export interface User {
-  id: string;
-  username: string;
-  name: string;
-  role: string;
+	id: string;
+	username: string;
+	name: string;
+	role: string;
 }
 
 interface AuthState {
-  user: User | null;
-  accessToken: string | null;
-  login: (tokens: { accessToken: string; refreshToken: string }, user: User) => void;
-  logout: () => void;
+	user: User | null;
+	isLoading: boolean;
+	login: (user: User) => void;
+	logout: () => Promise<void>;
+	checkAuth: () => Promise<void>;
+	setLoading: (loading: boolean) => void;
 }
 
-export const useAuthStore = create<AuthState>()(
-  persist(
-    (set) => ({
-      user: null,
-      accessToken: null,
-      login: (tokens, user) => {
-        set({ accessToken: tokens.accessToken, user });
-        localStorage.setItem('refreshToken', tokens.refreshToken);
-      },
-      logout: () => {
-        set({ accessToken: null, user: null });
-        localStorage.removeItem('refreshToken');
-      },
-    }),
-    {
-      name: 'auth-storage',
-      partialize: (state) => ({ user: state.user, accessToken: state.accessToken }),
-    }
-  )
-);
+export const useAuthStore = create<AuthState>((set) => ({
+	user: null,
+	isLoading: false,
+	login: (user) => {
+		set({ user: user, isLoading: false });
+	},
+	logout: async () => {
+		try {
+			await api.logout();
+		} catch {}
+		set({ user: null, isLoading: false });
+	},
+	checkAuth: async () => {
+		set({ isLoading: true });
+		try {
+			const user = await api.apiRequest<User>("/auth/me", { method: "POST" });
+			set({ user, isLoading: false });
+		} catch {
+			set({ user: null, isLoading: false });
+		}
+	},
+	setLoading: (loading) => {
+		set({ isLoading: loading });
+	},
+}));

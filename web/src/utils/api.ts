@@ -1,5 +1,6 @@
 const API_BASE_URL =
-	import.meta.env.VITE_API_BASE_URL + "/api" || "http://localhost:3000";
+	import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
+const API_ENDPOINT = "/api";
 
 type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
 
@@ -8,28 +9,28 @@ interface RequestOptions extends Omit<RequestInit, "body" | "method"> {
 	method?: HttpMethod;
 }
 
-export async function apiRequest<T>(
+const apiRequest = async <T>(
 	endpoint: string,
 	options: RequestOptions = {},
-): Promise<T> {
+): Promise<T> => {
 	const { body, method = "GET", ...fetchOptions } = options;
 
-	const url = `${API_BASE_URL}${endpoint}`;
+	const url = `${API_BASE_URL}${API_ENDPOINT + endpoint}`;
 
 	const config: RequestInit = {
 		...fetchOptions,
 		method,
+		credentials: "include",
 		headers: {
 			"Content-Type": "application/json",
+			"x-client-type": "web",
 			...fetchOptions.headers,
 		},
 	};
 
 	if (body) {
 		if (body instanceof FormData) {
-			// Cast headers to mutable record to delete Content-Type
-			const headers = config.headers as Record<string, string>;
-			delete headers["Content-Type"];
+			delete (config.headers as Record<string, string>)["Content-Type"];
 			config.body = body;
 		} else {
 			config.body = JSON.stringify(body);
@@ -46,6 +47,15 @@ export async function apiRequest<T>(
 	}
 
 	return response.json();
-}
+};
 
-export default apiRequest;
+const logout = async (): Promise<void> => {
+	await apiRequest("/auth/logout", { method: "POST" });
+};
+
+export const api = {
+	apiRequest,
+	logout,
+};
+
+export default api.apiRequest;

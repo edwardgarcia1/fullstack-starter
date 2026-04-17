@@ -11,7 +11,6 @@ import {
 	Link,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { apiRequest } from "../utils/api";
 
 const Register: React.FC = () => {
 	const [username, setUsername] = useState("");
@@ -36,10 +35,20 @@ const Register: React.FC = () => {
 		setLoading(true);
 
 		try {
-			await apiRequest("/auth/register", {
+			const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/auth/register`, {
 				method: "POST",
-				body: { username, password, name },
+				credentials: "include",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({ username, password, name }),
 			});
+
+			if (!response.ok) {
+				const errorData = await response.json().catch(() => ({}));
+				throw new Error(errorData.message || "Registration failed");
+			}
+
 			setSuccess("Registration successful! Redirecting to login…");
 			setTimeout(() => {
 				if (isMounted.current) {

@@ -12,18 +12,6 @@ import {
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/useAuthStore";
-import { apiRequest } from "../utils/api";
-
-interface LoginResponse {
-	accessToken: string;
-	refreshToken: string;
-	user: {
-		id: string;
-		username: string;
-		name: string;
-		role: string;
-	};
-}
 
 const Login: React.FC = () => {
 	const [username, setUsername] = useState("");
@@ -39,12 +27,25 @@ const Login: React.FC = () => {
 		setLoading(true);
 
 		try {
-			const response = await apiRequest<LoginResponse>("/auth/login", {
-				method: "POST",
-				body: { username, password },
-			});
+			const response = await fetch(
+				`${import.meta.env.VITE_API_BASE_URL || "http://localhost:3000"}/api/auth/login`,
+				{
+					method: "POST",
+					credentials: "include",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify({ username, password }),
+				},
+			);
 
-			login(response, response.user);
+			if (!response.ok) {
+				const errorData = await response.json().catch(() => ({}));
+				throw new Error(errorData.message || "Login failed");
+			}
+
+			const data = await response.json();
+			login(data.user);
 			navigate("/");
 		} catch (err) {
 			setError(err instanceof Error ? err.message : "Login failed");

@@ -7,10 +7,7 @@ import {
 } from "./service";
 import { jwtMiddleware, refreshTokenMiddleware } from "../../middlewares/jwt";
 import { rateLimitMiddleware } from "../../middlewares/rateLimit";
-import {
-	BadRequestError,
-	UnauthorizedError,
-} from "../../middlewares/error";
+import { BadRequestError, UnauthorizedError } from "../../middlewares/error";
 
 export const authRoutes = new Elysia({ prefix: "/auth" })
 	.use(rateLimitMiddleware)
@@ -46,7 +43,7 @@ export const authRoutes = new Elysia({ prefix: "/auth" })
 	)
 	.post(
 		"/login",
-		async ({ body, rateLimit, limited, jwt, refreshJwt }) => {
+		async ({ body, rateLimit, limited, jwt, refreshJwt, cookie, headers }) => {
 			if (limited) {
 				throw new BadRequestError("Rate limit exceeded");
 			}
@@ -61,18 +58,55 @@ export const authRoutes = new Elysia({ prefix: "/auth" })
 			if (!isValid) {
 				throw new UnauthorizedError("Invalid credentials");
 			}
+
 			const accessToken = await jwt.sign({
 				id: user.id,
 				username: user.username,
 				role: user.role,
 			});
+
 			const refreshToken = await refreshJwt.sign({
 				userId: user.id,
 				tokenId: Math.random().toString(36).substring(7),
 			});
+
+			const isMobile = headers?.["x-client-type"] === "mobile";
+
+			if (isMobile) {
+				return {
+					accessToken,
+					refreshToken,
+					user: {
+						id: user.id,
+						username: user.username,
+						name: user.name,
+						role: user.role,
+					},
+				};
+			}
+
+			const isProd = process.env.NODE_ENV === "production";
+
+			(cookie as any).accessToken.set({
+				value: accessToken,
+				httpOnly: true,
+				secure: isProd,
+				sameSite: "lax",
+				path: "/",
+				maxAge: 60 * 15,
+			});
+
+			(cookie as any).refreshToken.set({
+				value: refreshToken,
+				httpOnly: true,
+				secure: isProd,
+				sameSite: "lax",
+				path: "/",
+				maxAge: 60 * 60 * 24 * 7,
+			});
+
 			return {
-				accessToken,
-				refreshToken,
+				message: "Logged in successfully",
 				user: {
 					id: user.id,
 					username: user.username,
@@ -88,99 +122,115 @@ export const authRoutes = new Elysia({ prefix: "/auth" })
 			}),
 		},
 	)
-	.post("/logout", async ({ jwt, headers }) => {
-		const authHeader = headers.authorization;
-		if (!authHeader || !authHeader.startsWith("Bearer ")) {
-			throw new UnauthorizedError();
-		}
+	.post("/logout", async ({ cookie }) => {
+		const isProd = process.env.NODE_ENV === "production";
 
-		const token = authHeader.substring(7);
-		const decodedUser = await jwt.verify(token);
+		(cookie as any).accessToken.set({
+			value: "",
+			httpOnly: true,
+			secure: isProd,
+			sameSite: "lax",
+			path: "/",
+			maxAge: 0,
+		});
 
-		if (!decodedUser) {
-			throw new UnauthorizedError();
-		}
+		(cookie as any).refreshToken.set({
+			value: "",
+			httpOnly: true,
+			secure: isProd,
+			sameSite: "lax",
+			path: "/",
+			maxAge: 0,
+		});
 
-		// In a real application, you would add the token to a blacklist
 		return { message: "Logged out successfully" };
 	})
-	.post(
-		"/refresh",
-		async ({ body, refreshJwt, jwt }) => {
-			const bodyTyped = body as { refreshToken: string };
+	.post("/refresh", async ({ refreshJwt, jwt, cookie }) => {
+		const refreshTokenVal = (cookie as any)?.refreshToken.value;
+		const refreshToken =
+			typeof refreshTokenVal === "string" ? refreshTokenVal : null;
 
-			if (!bodyTyped.refreshToken) {
-				throw new UnauthorizedError("Refresh token required");
-			}
+		if (!refreshToken) {
+			throw new UnauthorizedError("Refresh token required");
+		}
 
-			const decodedRefresh = await refreshJwt.verify(bodyTyped.refreshToken);
-			if (!decodedRefresh) {
-				throw new UnauthorizedError("Invalid refresh token");
-			}
+		const decodedRefresh = await refreshJwt.verify(refreshToken);
+		if (!decodedRefresh) {
+			throw new UnauthorizedError("Invalid refresh token");
+		}
 
-			const userId = (decodedRefresh as any).userId;
-			const user = await findUserById(userId);
-			if (!user) {
-				throw new UnauthorizedError("User not found");
-			}
+		const userId = (decodedRefresh as any).userId;
+		const user = await findUserById(userId);
+		if (!user) {
+			throw new UnauthorizedError("User not found");
+		}
 
-			const newAccessToken = await jwt.sign({
-				id: user.id,
-				username: user.username,
-				role: user.role,
-			});
+		const newAccessToken = await jwt.sign({
+			id: user.id,
+			username: user.username,
+			role: user.role,
+		});
 
-			const newRefreshToken = await refreshJwt.sign({
-				userId: user.id,
-				tokenId: Math.random().toString(36).substring(7),
-			});
+		const newRefreshToken = await refreshJwt.sign({
+			userId: user.id,
+			tokenId: Math.random().toString(36).substring(7),
+		});
 
-			return {
-				accessToken: newAccessToken,
-				refreshToken: newRefreshToken,
-				user: {
-					id: user.id,
-					username: user.username,
-					name: user.name,
-					role: user.role,
-				},
-			};
-		},
-		{
-			body: t.Object({
-				refreshToken: t.String(),
-			}),
-		},
-	)
-	.post(
-		"/access",
-		async ({ body, jwt }) => {
-			const bodyTyped = body as { token: string };
+		const isProd = process.env.NODE_ENV === "production";
 
-			if (!bodyTyped.token) {
-				throw new UnauthorizedError("Token required");
-			}
+		(cookie as any).accessToken.set({
+			value: newAccessToken,
+			httpOnly: true,
+			secure: isProd,
+			sameSite: "lax",
+			path: "/",
+			maxAge: 60 * 15,
+		});
 
-			const decoded = await jwt.verify(bodyTyped.token);
-			if (!decoded) {
-				throw new UnauthorizedError("Invalid token");
-			}
+		(cookie as any).refreshToken.set({
+			value: newRefreshToken,
+			httpOnly: true,
+			secure: isProd,
+			sameSite: "lax",
+			path: "/",
+			maxAge: 60 * 60 * 24 * 7,
+		});
 
-			const userId = (decoded as any).id;
-			const user = await findUserById(userId);
-			if (!user) {
-				throw new UnauthorizedError("User not found");
-			}
+		return {
+			message: "Token refreshed successfully",
+		};
+	})
+	.post("/me", async ({ jwt, headers, cookie }) => {
+		const authHeader = headers?.authorization;
+		let token: string | null = null;
+		if (
+			authHeader &&
+			typeof authHeader === "string" &&
+			authHeader.startsWith("Bearer ")
+		) {
+			token = authHeader.substring(7);
+		} else if (
+			(cookie as any)?.accessToken.value &&
+			typeof (cookie as any).accessToken.value === "string"
+		) {
+			token = (cookie as any).accessToken.value;
+		}
 
-			const { password, ...userWithoutPassword } = user;
-			return {
-				accessToken: bodyTyped.token,
-				user: userWithoutPassword,
-			};
-		},
-		{
-			body: t.Object({
-				token: t.String(),
-			}),
-		},
-	);
+		if (!token) {
+			throw new UnauthorizedError("No authentication token provided");
+		}
+
+		const decoded = await jwt.verify(token);
+		if (!decoded) {
+			throw new UnauthorizedError("Invalid token");
+		}
+
+		const userId = (decoded as any).id;
+		const user = await findUserById(userId);
+		if (!user) {
+			throw new UnauthorizedError("User not found");
+		}
+
+		const { password, ...userWithoutPassword } = user;
+		return userWithoutPassword;
+	});

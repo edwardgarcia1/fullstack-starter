@@ -12,21 +12,35 @@ import {
 export const userRoutes = new Elysia({ prefix: "/users" })
 	.use(rateLimitMiddleware)
 	.use(jwtMiddleware)
-	.get("/", async ({ jwt, headers, rateLimit, limited }) => {
+	.get("/", async ({ jwt, headers, cookie, rateLimit, limited }) => {
 		if (limited) {
 			throw new BadRequestError("Rate limit exceeded");
 		}
 
 		const authHeader = headers.authorization;
-		if (!authHeader || !authHeader.startsWith("Bearer ")) {
-			throw new UnauthorizedError();
+		let token: string | null = null;
+
+		if (
+			authHeader &&
+			typeof authHeader === "string" &&
+			authHeader.startsWith("Bearer ")
+		) {
+			token = authHeader.substring(7);
+		} else if (
+			(cookie as any)?.accessToken.value &&
+			typeof (cookie as any).accessToken.value === "string"
+		) {
+			token = (cookie as any).accessToken.value;
 		}
 
-		const token = authHeader.substring(7);
+		if (!token) {
+			throw new UnauthorizedError("No authentication token provided");
+		}
+
 		const decodedUser = await jwt.verify(token);
 
 		if (!decodedUser) {
-			throw new UnauthorizedError();
+			throw new UnauthorizedError("Invalid token");
 		}
 
 		// Role-based access control
@@ -37,17 +51,31 @@ export const userRoutes = new Elysia({ prefix: "/users" })
 		const users = await getAllUsers();
 		return users.map(({ password, ...rest }) => rest);
 	})
-	.get("/profile", async ({ jwt, headers }) => {
+	.get("/profile", async ({ jwt, headers, cookie }) => {
 		const authHeader = headers.authorization;
-		if (!authHeader || !authHeader.startsWith("Bearer ")) {
-			throw new UnauthorizedError();
+		let token: string | null = null;
+
+		if (
+			authHeader &&
+			typeof authHeader === "string" &&
+			authHeader.startsWith("Bearer ")
+		) {
+			token = authHeader.substring(7);
+		} else if (
+			(cookie as any)?.accessToken.value &&
+			typeof (cookie as any).accessToken.value === "string"
+		) {
+			token = (cookie as any).accessToken.value;
 		}
 
-		const token = authHeader.substring(7);
+		if (!token) {
+			throw new UnauthorizedError("No authentication token provided");
+		}
+
 		const decodedUser = await jwt.verify(token);
 
 		if (!decodedUser) {
-			throw new UnauthorizedError();
+			throw new UnauthorizedError("Invalid token");
 		}
 
 		const userProfile = await findUserById((decodedUser as any).id);
