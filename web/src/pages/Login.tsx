@@ -67,7 +67,7 @@ const Login: React.FC = () => {
 				maxWidth="xs"
 				sx={{
 					mt: 2,
-					mb: 2,
+					mb: 12,
 					display: "flex",
 					flexDirection: "column",
 					justifyContent: "center",
