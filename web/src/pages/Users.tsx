@@ -243,13 +243,27 @@ const Users: React.FC = () => {
 						</Table>
 					</TableContainer>
 					<TablePagination
-						rowsPerPageOptions={[10, 20]}
 						component="div"
 						count={users.length}
 						rowsPerPage={rowsPerPage}
 						page={page}
 						onPageChange={handleChangePage}
 						onRowsPerPageChange={handleChangeRowsPerPage}
+						labelRowsPerPage="Rows:"
+						sx={{
+							width: '100%',
+							display: 'flex',
+							flexDirection: { xs: 'column', sm: 'row' },
+							alignItems: 'center',
+							gap: 1,
+							'& .MuiTablePagination-toolbar': {
+								flexWrap: 'wrap',
+								justifyContent: { xs: 'center', sm: 'flex-end' }
+							},
+							'& .MuiTablePagination-spacer': {
+								display: 'none'
+							}
+						}}
 					/>
 				</Paper>
 			)}
