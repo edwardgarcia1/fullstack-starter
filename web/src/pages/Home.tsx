@@ -1,5 +1,5 @@
 import React from 'react';
-import { Typography, Box } from '@mui/material';
+import { Typography } from '@mui/material';
 import { useAuthStore } from '../store/useAuthStore';
 import AppLayout from '../layouts/AppLayout';
 

@@ -22,7 +22,6 @@ interface AppHeaderProps {
 
 const AppHeader: React.FC<AppHeaderProps> = ({ onMenuClick, drawerWidth, currentTab }) => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
   const navigate = useNavigate();
 
