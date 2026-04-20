@@ -8,6 +8,12 @@ import {
   Menu,
   MenuItem,
   ListItemIcon,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Button,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
@@ -22,6 +28,7 @@ interface AppHeaderProps {
 
 const AppHeader: React.FC<AppHeaderProps> = ({ onMenuClick, drawerWidth, currentTab }) => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const [logoutDialogOpen, setLogoutDialogOpen] = React.useState(false);
   const logout = useAuthStore((state) => state.logout);
   const navigate = useNavigate();
 
@@ -33,10 +40,19 @@ const AppHeader: React.FC<AppHeaderProps> = ({ onMenuClick, drawerWidth, current
     setAnchorEl(null);
   };
 
-  const handleLogout = () => {
+  const handleLogoutClick = () => {
     handleMenuClose();
+    setLogoutDialogOpen(true);
+  };
+
+  const handleLogoutConfirm = () => {
+    setLogoutDialogOpen(false);
     logout();
     navigate('/login');
+  };
+
+  const handleLogoutCancel = () => {
+    setLogoutDialogOpen(false);
   };
 
   return (
@@ -92,7 +108,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({ onMenuClick, drawerWidth, current
             </ListItemIcon>
             Profile
           </MenuItem>
-          <MenuItem onClick={handleLogout}>
+          <MenuItem onClick={handleLogoutClick}>
             <ListItemIcon>
               <LogoutIcon fontSize="small" />
             </ListItemIcon>
@@ -100,6 +116,27 @@ const AppHeader: React.FC<AppHeaderProps> = ({ onMenuClick, drawerWidth, current
           </MenuItem>
         </Menu>
       </Toolbar>
+      <Dialog
+        open={logoutDialogOpen}
+        onClose={handleLogoutCancel}
+        aria-labelledby="logout-dialog-title"
+        aria-describedby="logout-dialog-description"
+      >
+        <DialogTitle id="logout-dialog-title">Confirm Logout</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="logout-dialog-description">
+            Are you sure you want to logout?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleLogoutCancel} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleLogoutConfirm} color="primary" autoFocus>
+            Logout
+          </Button>
+        </DialogActions>
+      </Dialog>
     </AppBar>
   );
 };
