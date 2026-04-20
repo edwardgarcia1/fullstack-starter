@@ -41,7 +41,7 @@ const Login: React.FC = () => {
 
 			if (!response.ok) {
 				const errorData = await response.json().catch(() => ({}));
-				throw new Error(errorData.message || "Login failed");
+				throw new Error(errorData.error || errorData.message || "Login failed");
 			}
 
 			const data = await response.json();

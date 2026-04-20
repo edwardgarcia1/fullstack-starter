@@ -35,18 +35,25 @@ const Register: React.FC = () => {
 		setLoading(true);
 
 		try {
-			const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/auth/register`, {
-				method: "POST",
-				credentials: "include",
-				headers: {
-					"Content-Type": "application/json",
+			const response = await fetch(
+				`${import.meta.env.VITE_API_BASE_URL || "http://localhost:3000"}/api/auth/register`,
+				{
+					method: "POST",
+					credentials: "include",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify({ username, password, name }),
 				},
-				body: JSON.stringify({ username, password, name }),
-			});
+			);
 
 			if (!response.ok) {
 				const errorData = await response.json().catch(() => ({}));
-				throw new Error(errorData.message || "Registration failed");
+				setError(errorData.error || errorData.message || "Registration failed");
+				setLoading(false);
+				throw new Error(
+					errorData.error || errorData.message || "Registration failed",
+				);
 			}
 
 			setSuccess("Registration successful! Redirecting to login…");
@@ -55,6 +62,7 @@ const Register: React.FC = () => {
 					navigate("/login");
 				}
 			}, 2000);
+			console.log("SUCCESS");
 		} catch (err) {
 			if (isMounted.current) {
 				setError(err instanceof Error ? err.message : "Registration failed");
