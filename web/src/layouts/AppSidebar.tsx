@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Drawer,
   List,
@@ -11,6 +12,7 @@ import {
 } from '@mui/material';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import SettingsIcon from '@mui/icons-material/Settings';
+import PeopleIcon from '@mui/icons-material/People';
 
 interface AppSidebarProps {
   mobileOpen: boolean;
@@ -20,6 +22,7 @@ interface AppSidebarProps {
 }
 
 const AppSidebar: React.FC<AppSidebarProps> = ({ mobileOpen, onToggle, drawerWidth, appName }) => {
+  const navigate = useNavigate();
   const drawer = (
     <div>
       <Box sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -29,13 +32,19 @@ const AppSidebar: React.FC<AppSidebarProps> = ({ mobileOpen, onToggle, drawerWid
       </Box>
       <Divider />
       <List>
-        <ListItemButton>
+        <ListItemButton onClick={() => navigate('/')}>
           <ListItemIcon>
             <DashboardIcon />
           </ListItemIcon>
           <ListItemText primary="Dashboard" />
         </ListItemButton>
-        <ListItemButton>
+        <ListItemButton onClick={() => navigate('/users')}>
+          <ListItemIcon>
+            <PeopleIcon />
+          </ListItemIcon>
+          <ListItemText primary="Users" />
+        </ListItemButton>
+        <ListItemButton onClick={() => navigate('/settings')}>
           <ListItemIcon>
             <SettingsIcon />
           </ListItemIcon>
