@@ -1,36 +1,40 @@
 import { Elysia } from "elysia";
 import { findUserById, getAllUsers } from "./service";
-import { jwtMiddleware } from "../../middlewares/jwt";
+import { authGuard } from "../../middlewares/auth";
 import { rateLimitMiddleware } from "../../middlewares/rateLimit";
+import { caslMiddleware, checkPermission } from "../../middlewares/casl";
 import {
     BadRequestError,
-    ForbiddenError,
     NotFoundError,
+    UnauthorizedError,
 } from "../../middlewares/error";
-import { extractAndVerifyToken } from "../../shared/auth";
 
 export const userRoutes = new Elysia({ prefix: "/users" })
     .use(rateLimitMiddleware)
-    .use(jwtMiddleware)
-    .get("/", async ({ jwt, headers, cookie, rateLimit, limited }) => {
+    .use(authGuard)
+    .use(caslMiddleware)
+    .get("/", async ({ rateLimit, limited, ability, user }) => {
         if (limited) {
             throw new BadRequestError("Rate limit exceeded");
         }
 
-        const decodedUser = await extractAndVerifyToken(jwt, headers, cookie);
-
-        // Role-based access control
-        if (decodedUser.role !== "superadmin") {
-            throw new ForbiddenError("Insufficient permissions");
+        if (!user) {
+            throw new UnauthorizedError("Authentication required");
         }
+
+        // CASL RBAC check
+        checkPermission(ability, "read", "User");
 
         const users = await getAllUsers();
         return users.map(({ password, ...rest }) => rest);
     })
-    .get("/profile", async ({ jwt, headers, cookie }) => {
-        const decodedUser = await extractAndVerifyToken(jwt, headers, cookie);
+    .get("/profile", async ({ user }) => {
+        // user is provided by authGuard
+        if (!user) {
+            throw new UnauthorizedError("Authentication required");
+        }
 
-        const userProfile = await findUserById(decodedUser.id);
+        const userProfile = await findUserById(user.id);
         if (!userProfile) {
             throw new NotFoundError("User not found");
         }

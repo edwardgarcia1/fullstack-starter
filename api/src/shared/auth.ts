@@ -1,5 +1,5 @@
 import { UnauthorizedError } from "../middlewares/error";
-import { DecodedToken } from "../middlewares/jwt";
+import type { DecodedToken } from "../middlewares/jwt";
 
 export async function extractAndVerifyToken(jwt: any, headers: any, cookie: any): Promise<DecodedToken> {
     const authHeader = headers.authorization;

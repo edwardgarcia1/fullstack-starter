@@ -7,6 +7,7 @@ import {
 } from "./service";
 import { jwtMiddleware, refreshTokenMiddleware } from "../../middlewares/jwt";
 import { rateLimitMiddleware } from "../../middlewares/rateLimit";
+import { authGuard } from "../../middlewares/auth";
 import { BadRequestError, UnauthorizedError } from "../../middlewares/error";
 import { extractAndVerifyToken } from "../../shared/auth";
 
@@ -201,14 +202,17 @@ export const authRoutes = new Elysia({ prefix: "/auth" })
             message: "Token refreshed successfully",
         };
     })
-    .post("/me", async ({ jwt, headers, cookie }) => {
-        const decoded = await extractAndVerifyToken(jwt, headers, cookie);
-
-        const user = await findUserById(decoded.id);
+    .use(authGuard)
+    .post("/me", async ({ user }) => {
         if (!user) {
+            throw new UnauthorizedError("Authentication required");
+        }
+
+        const userProfile = await findUserById(user.id);
+        if (!userProfile) {
             throw new UnauthorizedError("User not found");
         }
 
-        const { password, ...userWithoutPassword } = user;
+        const { password, ...userWithoutPassword } = userProfile;
         return userWithoutPassword;
     });

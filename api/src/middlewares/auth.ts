@@ -16,17 +16,28 @@ declare module "elysia" {
 }
 
 export const authGuard = (app: Elysia) =>
-	app.use(jwtMiddleware).derive(async ({ jwt, cookie }) => {
+	app.use(jwtMiddleware).derive(async ({ jwt, cookie, headers }) => {
 		let token: string | null = null;
 
-		const authHeader = (cookie as any)?.authorization;
+		// Check Authorization header first
+		const authHeader = headers.authorization;
 		if (
 			authHeader &&
 			typeof authHeader === "string" &&
 			authHeader.startsWith("Bearer ")
 		) {
 			token = authHeader.substring(7);
-		} else if (
+		} 
+		// Check cookie for Bearer token
+		else if (
+			(cookie as any)?.authorization &&
+			typeof (cookie as any).authorization === "string" &&
+			(cookie as any).authorization.startsWith("Bearer ")
+		) {
+			token = (cookie as any).authorization.substring(7);
+		}
+		// Check access token cookie
+		else if (
 			(cookie as any)?.accessToken.value &&
 			typeof (cookie as any).accessToken.value === "string"
 		) {
