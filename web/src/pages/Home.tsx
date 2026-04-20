@@ -6,8 +6,8 @@ import AppLayout from '../layouts/AppLayout';
 const Home: React.FC = () => {
   const user = useAuthStore((state) => state.user);
 
-  return (
-    <AppLayout currentTab="Dashboard" appName="Fullstack Starter">
+	return (
+		<AppLayout currentTab="Dashboard">
       <Typography component="p" sx={{ mb: 2 }}>
         Welcome to the dashboard, {user?.name}!
       </Typography>

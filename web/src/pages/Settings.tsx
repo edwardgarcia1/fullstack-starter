@@ -62,7 +62,7 @@ const Settings: React.FC = () => {
 	};
 
 	return (
-		<AppLayout currentTab="Settings" appName="Fullstack Starter">
+		<AppLayout currentTab="Settings">
 			<Box sx={{}}>
 				<Paper elevation={2} sx={{ mb: 2 }}>
 					<List>

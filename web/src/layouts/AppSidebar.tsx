@@ -6,7 +6,6 @@ import {
 	ListItemIcon,
 	ListItemText,
 	Box,
-	Divider,
 	ListItemButton,
 	Typography,
 } from "@mui/material";
@@ -20,15 +19,14 @@ interface AppSidebarProps {
 	mobileOpen: boolean;
 	onToggle: () => void;
 	drawerWidth: number;
-	appName: string;
 }
 
 const AppSidebar: React.FC<AppSidebarProps> = ({
 	mobileOpen,
 	onToggle,
 	drawerWidth,
-	appName,
 }) => {
+	const appName = import.meta.env.VITE_APP_NAME || "App";
 	const navigate = useNavigate();
 	const ability = useAbility();
 

@@ -144,7 +144,7 @@ const Users: React.FC = () => {
 	];
 
 	return (
-		<AppLayout currentTab="Users" appName="Fullstack Starter">
+		<AppLayout currentTab="Users">
 			{loading ? (
 				<Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
 					<CircularProgress />
