@@ -76,9 +76,19 @@ const AppSidebar: React.FC<AppSidebarProps> = ({
 		}
 	};
 
+	const handleNav = (path: string) => {
+		navigate(path);
+		if (mobileOpen) {
+			onToggle();
+		}
+	};
+
 	const handleLogout = () => {
 		logout();
 		navigate("/login");
+		if (mobileOpen) {
+			onToggle();
+		}
 	};
 
 	const drawer = (
@@ -96,14 +106,14 @@ const AppSidebar: React.FC<AppSidebarProps> = ({
 				</Typography>
 			</Box>
 			<List sx={{ flexGrow: 1 }}>
-				<ListItemButton onClick={() => navigate("/")}>
+				<ListItemButton onClick={() => handleNav("/")}>
 					<ListItemIcon>
 						<DashboardIcon />
 					</ListItemIcon>
 					{!collapsed && <ListItemText primary="Dashboard" />}
 				</ListItemButton>
 				<Can I="read" a="users" ability={ability}>
-					<ListItemButton onClick={() => navigate("/users")}>
+					<ListItemButton onClick={() => handleNav("/users")}>
 						<ListItemIcon>
 							<PeopleIcon />
 						</ListItemIcon>
@@ -111,7 +121,7 @@ const AppSidebar: React.FC<AppSidebarProps> = ({
 					</ListItemButton>
 				</Can>
 				<Can I="read" a="settings" ability={ability}>
-					<ListItemButton onClick={() => navigate("/settings")}>
+					<ListItemButton onClick={() => handleNav("/settings")}>
 						<ListItemIcon>
 							<SettingsIcon />
 						</ListItemIcon>
@@ -156,7 +166,7 @@ const AppSidebar: React.FC<AppSidebarProps> = ({
 					)}
 				</AccordionSummary>
 				<AccordionDetails sx={{ p: 0 }}>
-					<ListItemButton onClick={() => navigate("/profile")} sx={{ py: 1 }}>
+					<ListItemButton onClick={() => handleNav("/profile")} sx={{ py: 1 }}>
 						<ListItemIcon>
 							<AccountCircleIcon fontSize="small" />
 						</ListItemIcon>
