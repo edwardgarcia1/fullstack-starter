@@ -16,6 +16,7 @@ import Home from "./pages/Home";
 import Users from "./pages/Users";
 import Settings from "./pages/Settings";
 import Profile from "./pages/Profile";
+import Loading from "./pages/Loading";
 
 const getCurrentTab = (path: string): string => {
 	switch (path) {
@@ -47,7 +48,7 @@ const AppRoutes: React.FC = () => {
 	const isAuthenticated = !!user;
 
 	if (isLoading) {
-		return null;
+		return <Loading />;
 	}
 
 	return (
@@ -60,19 +61,27 @@ const AppRoutes: React.FC = () => {
 			<Route element={<AuthenticatedLayout />}>
 				<Route
 					path="/"
-					element={isAuthenticated ? <Home /> : <Navigate to="/login" replace />}
+					element={
+						isAuthenticated ? <Home /> : <Navigate to="/login" replace />
+					}
 				/>
 				<Route
 					path="/profile"
-					element={isAuthenticated ? <Profile /> : <Navigate to="/login" replace />}
+					element={
+						isAuthenticated ? <Profile /> : <Navigate to="/login" replace />
+					}
 				/>
 				<Route
 					path="/users"
-					element={isAuthenticated ? <Users /> : <Navigate to="/login" replace />}
+					element={
+						isAuthenticated ? <Users /> : <Navigate to="/login" replace />
+					}
 				/>
 				<Route
 					path="/settings"
-					element={isAuthenticated ? <Settings /> : <Navigate to="/login" replace />}
+					element={
+						isAuthenticated ? <Settings /> : <Navigate to="/login" replace />
+					}
 				/>
 			</Route>
 			<Route path="*" element={<Navigate to="/" replace />} />
