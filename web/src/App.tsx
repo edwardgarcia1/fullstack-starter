@@ -10,6 +10,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Home from "./pages/Home";
 import Users from "./pages/Users";
+import Settings from "./pages/Settings";
 
 const AppRoutes: React.FC = () => {
 	const { user, isLoading } = useAuthStore();
@@ -33,6 +34,10 @@ const AppRoutes: React.FC = () => {
 			<Route
 				path="/users"
 				element={isAuthenticated ? <Users /> : <Navigate to="/login" replace />}
+			/>
+			<Route
+				path="/settings"
+				element={isAuthenticated ? <Settings /> : <Navigate to="/login" replace />}
 			/>
 			<Route path="*" element={<Navigate to="/" replace />} />
 		</Routes>
