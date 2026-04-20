@@ -10,12 +10,13 @@ import {
 	Switch,
 } from "@mui/material";
 import AppLayout from "../layouts/AppLayout";
+import { useThemeMode } from "../providers/AppProvider";
 
 const Settings: React.FC = () => {
 	const [notifications, setNotifications] = useState(true);
-	const [darkMode, setDarkMode] = useState(false);
 	const [autoSave, setAutoSave] = useState(true);
 	const [compactMode, setCompactMode] = useState(false);
+	const { darkMode, setDarkMode } = useThemeMode();
 
 	// Load settings from localStorage on mount
 	useEffect(() => {
@@ -24,7 +25,7 @@ const Settings: React.FC = () => {
 			try {
 				const settings = JSON.parse(savedSettings);
 				setNotifications(settings.notifications ?? true);
-				setDarkMode(settings.darkMode ?? false);
+				// darkMode is handled by AppProvider
 				setAutoSave(settings.autoSave ?? true);
 				setCompactMode(settings.compactMode ?? false);
 			} catch (error) {

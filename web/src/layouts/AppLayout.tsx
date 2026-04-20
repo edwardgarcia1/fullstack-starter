@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, CssBaseline } from '@mui/material';
+import { Box } from '@mui/material';
 import AppHeader from './AppHeader';
 import AppSidebar from './AppSidebar';
 
@@ -20,7 +20,6 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, currentTab = '', appNam
 
   return (
     <Box sx={{ display: 'flex', height: '100vh', padding: 'env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)' }}>
-      <CssBaseline />
       <AppHeader onMenuClick={handleDrawerToggle} drawerWidth={drawerWidth} currentTab={currentTab} />
       <AppSidebar mobileOpen={mobileOpen} onToggle={handleDrawerToggle} drawerWidth={drawerWidth} appName={appName} />
       <Box
