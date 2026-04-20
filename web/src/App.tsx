@@ -6,6 +6,7 @@ import {
 	Navigate,
 } from "react-router-dom";
 import { useAuthStore } from "./store/useAuthStore";
+import { AbilityProvider } from "./config/AbilityProvider";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Home from "./pages/Home";
@@ -52,9 +53,11 @@ function App() {
 	}, [checkAuth]);
 
 	return (
-		<Router>
-			<AppRoutes />
-		</Router>
+		<AbilityProvider>
+			<Router>
+				<AppRoutes />
+			</Router>
+		</AbilityProvider>
 	);
 }
 

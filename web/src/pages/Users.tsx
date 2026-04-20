@@ -70,7 +70,7 @@ const Users: React.FC = () => {
 		setSelected([]);
 	};
 
-	const handleClick = (event: React.MouseEvent<unknown>, id: number) => {
+	const handleClick = (_event: React.MouseEvent<unknown>, id: number) => {
 		const selectedIndex = selected.indexOf(id);
 		let newSelected: readonly number[] = [];
 
@@ -90,7 +90,7 @@ const Users: React.FC = () => {
 		setSelected(newSelected);
 	};
 
-	const handleChangePage = (event: unknown, newPage: number) => {
+	const handleChangePage = (_event: unknown, newPage: number) => {
 		setPage(newPage);
 	};
 

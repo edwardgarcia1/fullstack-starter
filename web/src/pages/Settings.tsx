@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
 	Box,
-	Typography,
 	Divider,
 	Paper,
 	List,
