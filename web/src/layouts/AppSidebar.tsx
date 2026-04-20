@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
 	Drawer,
@@ -8,12 +8,18 @@ import {
 	Box,
 	ListItemButton,
 	Typography,
+	Menu,
+	MenuItem,
+	Divider,
 } from "@mui/material";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import SettingsIcon from "@mui/icons-material/Settings";
 import PeopleIcon from "@mui/icons-material/People";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import LogoutIcon from "@mui/icons-material/Logout";
 import { Can } from "@casl/react";
 import { useAbility } from "../config/AbilityProvider";
+import { useAuthStore } from "../store/useAuthStore";
 
 interface AppSidebarProps {
 	mobileOpen: boolean;
@@ -29,9 +35,28 @@ const AppSidebar: React.FC<AppSidebarProps> = ({
 	const appName = import.meta.env.VITE_APP_NAME || "App";
 	const navigate = useNavigate();
 	const ability = useAbility();
+	const user = useAuthStore((state) => state.user);
+	const logout = useAuthStore((state) => state.logout);
+
+	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+	const open = Boolean(anchorEl);
+
+	const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
+		setAnchorEl(event.currentTarget);
+	};
+
+	const handleMenuClose = () => {
+		setAnchorEl(null);
+	};
+
+	const handleLogout = () => {
+		handleMenuClose();
+		logout();
+		navigate("/login");
+	};
 
 	const drawer = (
-		<div>
+		<Box sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
 			<Box
 				sx={{
 					p: 2,
@@ -44,7 +69,7 @@ const AppSidebar: React.FC<AppSidebarProps> = ({
 					{appName}
 				</Typography>
 			</Box>
-			<List>
+			<List sx={{ flexGrow: 1 }}>
 				<ListItemButton onClick={() => navigate("/")}>
 					<ListItemIcon>
 						<DashboardIcon />
@@ -68,7 +93,59 @@ const AppSidebar: React.FC<AppSidebarProps> = ({
 					</ListItemButton>
 				</Can>
 			</List>
-		</div>
+			<Divider />
+			<Box>
+				<ListItemButton
+					onClick={handleMenuClick}
+					sx={{
+						borderRadius: 0,
+						px: 2,
+						"&:hover": {
+							backgroundColor: "action.hover",
+						},
+					}}
+				>
+					<ListItemIcon>
+						<AccountCircleIcon />
+					</ListItemIcon>
+					<ListItemText
+						primary={user?.name || user?.username || "User"}
+						secondary={user?.username ? `@${user.username}` : ""}
+					/>
+				</ListItemButton>
+				<Menu
+					anchorEl={anchorEl}
+					open={open}
+					onClose={handleMenuClose}
+					anchorOrigin={{
+						vertical: "top",
+						horizontal: "left",
+					}}
+					transformOrigin={{
+						vertical: "bottom",
+						horizontal: "left",
+					}}
+				>
+					<MenuItem
+						onClick={() => {
+							handleMenuClose();
+							navigate("/profile");
+						}}
+					>
+						<ListItemIcon>
+							<AccountCircleIcon fontSize="small" />
+						</ListItemIcon>
+						Profile
+					</MenuItem>
+					<MenuItem onClick={handleLogout}>
+						<ListItemIcon>
+							<LogoutIcon fontSize="small" />
+						</ListItemIcon>
+						Logout
+					</MenuItem>
+				</Menu>
+			</Box>
+		</Box>
 	);
 
 	return (
