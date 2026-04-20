@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
 	Drawer,
@@ -48,6 +48,33 @@ const AppSidebar: React.FC<AppSidebarProps> = ({
 	const logout = useAuthStore((state) => state.logout);
 	const collapsedWidth = 56;
 	const effectiveWidth = collapsed ? collapsedWidth : drawerWidth;
+
+	// Swipe handling state
+	const touchStartX = useRef(0);
+	const touchEndX = useRef(0);
+	const MIN_SWIPE_THRESHOLD = 50;
+
+	const handleTouchStart = (e: React.TouchEvent) => {
+		touchStartX.current = e.changedTouches[0].screenX;
+	};
+
+	const handleTouchEnd = (e: React.TouchEvent) => {
+		touchEndX.current = e.changedTouches[0].screenX;
+		handleSwipe();
+	};
+
+	const handleSwipe = () => {
+		const swipeDistance = touchEndX.current - touchStartX.current;
+
+		// Swipe right to open
+		if (swipeDistance > MIN_SWIPE_THRESHOLD && !mobileOpen) {
+			onToggle();
+		}
+		// Swipe left to close
+		if (swipeDistance < -MIN_SWIPE_THRESHOLD && mobileOpen) {
+			onToggle();
+		}
+	};
 
 	const handleLogout = () => {
 		logout();
@@ -155,6 +182,21 @@ const AppSidebar: React.FC<AppSidebarProps> = ({
 				position: "relative",
 			}}
 		>
+			{/* Touch edge for opening sidebar on mobile */}
+			<Box
+				sx={{
+					display: { xs: "block", md: "none" },
+					position: "fixed",
+					left: 0,
+					top: 0,
+					width: 20,
+					height: "100vh",
+					zIndex: 1300, // Above drawer
+					cursor: "pointer",
+				}}
+				onTouchStart={handleTouchStart}
+				onTouchEnd={handleTouchEnd}
+			/>
 			<Drawer
 				variant="temporary"
 				open={mobileOpen}
@@ -166,6 +208,8 @@ const AppSidebar: React.FC<AppSidebarProps> = ({
 					display: { xs: "block", md: "none" },
 					"& .MuiDrawer-paper": { boxSizing: "border-box", width: drawerWidth },
 				}}
+				onTouchStart={handleTouchStart}
+				onTouchEnd={handleTouchEnd}
 			>
 				{drawer}
 			</Drawer>
