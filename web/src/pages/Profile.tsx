@@ -94,8 +94,8 @@ const Profile: React.FC = () => {
 				>
 					<Avatar
 						sx={{
-							width: 80,
-							height: 80,
+							width: 50,
+							height: 50,
 							bgcolor: "white",
 							color: "#667eea",
 							fontSize: "2rem",
@@ -130,7 +130,7 @@ const Profile: React.FC = () => {
 				</Alert>
 			)}
 
-			<Paper elevation={2} sx={{ p: 3, borderRadius: 2 }}>
+			<Paper elevation={2} sx={{ p: 2, borderRadius: 2 }}>
 				<Typography variant="h6" gutterBottom sx={{ color: "text.secondary" }}>
 					Account Details
 				</Typography>
