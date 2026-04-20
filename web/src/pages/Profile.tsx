@@ -15,7 +15,6 @@ import {
 import PersonIcon from "@mui/icons-material/Person";
 import BadgeIcon from "@mui/icons-material/Badge";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
-import AppLayout from "../layouts/AppLayout";
 import { useAuthStore } from "../store/useAuthStore";
 
 interface UserProfile {
@@ -72,7 +71,7 @@ const Profile: React.FC = () => {
 	const profileData = profile || authUser;
 
 	return (
-		<AppLayout currentTab="Profile">
+		<>
 			<Paper
 				elevation={3}
 				sx={{
@@ -180,7 +179,7 @@ const Profile: React.FC = () => {
 					</ListItem>
 				</List>
 			</Paper>
-		</AppLayout>
+		</>
 	);
 };
 

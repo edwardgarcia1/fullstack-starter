@@ -15,7 +15,6 @@ import {
 	Checkbox,
 	TableSortLabel,
 } from "@mui/material";
-import AppLayout from "../layouts/AppLayout";
 import { api } from "../utils/api";
 
 interface User {
@@ -144,7 +143,7 @@ const Users: React.FC = () => {
 	];
 
 	return (
-		<AppLayout currentTab="Users">
+		<>
 			{loading ? (
 				<Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
 					<CircularProgress />
@@ -267,7 +266,7 @@ const Users: React.FC = () => {
 					/>
 				</Paper>
 			)}
-		</AppLayout>
+		</>
 	);
 };
 

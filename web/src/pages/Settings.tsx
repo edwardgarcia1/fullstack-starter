@@ -9,7 +9,6 @@ import {
 	ListItemSecondaryAction,
 	Switch,
 } from "@mui/material";
-import AppLayout from "../layouts/AppLayout";
 import { useThemeMode } from "../providers/AppProvider";
 
 const Settings: React.FC = () => {
@@ -62,79 +61,77 @@ const Settings: React.FC = () => {
 	};
 
 	return (
-		<AppLayout currentTab="Settings">
-			<Box sx={{}}>
-				<Paper elevation={2} sx={{ mb: 2 }}>
-					<List>
-						<ListItem>
-							<ListItemText
-								primary="Notifications"
-								secondary="Receive email notifications for important updates"
+		<Box sx={{}}>
+			<Paper elevation={2} sx={{ mb: 2 }}>
+				<List>
+					<ListItem>
+						<ListItemText
+							primary="Notifications"
+							secondary="Receive email notifications for important updates"
+						/>
+						<ListItemSecondaryAction>
+							<Switch
+								edge="end"
+								checked={notifications}
+								onChange={(e) =>
+									updateSetting("notifications", e.target.checked)
+								}
 							/>
-							<ListItemSecondaryAction>
-								<Switch
-									edge="end"
-									checked={notifications}
-									onChange={(e) =>
-										updateSetting("notifications", e.target.checked)
-									}
-								/>
-							</ListItemSecondaryAction>
-						</ListItem>
+						</ListItemSecondaryAction>
+					</ListItem>
 
-						<Divider />
+					<Divider />
 
-						<ListItem>
-							<ListItemText
-								primary="Dark Mode"
-								secondary="Use dark theme across the application"
+					<ListItem>
+						<ListItemText
+							primary="Dark Mode"
+							secondary="Use dark theme across the application"
+						/>
+						<ListItemSecondaryAction>
+							<Switch
+								edge="end"
+								checked={darkMode}
+								onChange={(e) => updateSetting("darkMode", e.target.checked)}
 							/>
-							<ListItemSecondaryAction>
-								<Switch
-									edge="end"
-									checked={darkMode}
-									onChange={(e) => updateSetting("darkMode", e.target.checked)}
-								/>
-							</ListItemSecondaryAction>
-						</ListItem>
+						</ListItemSecondaryAction>
+					</ListItem>
 
-						<Divider />
+					<Divider />
 
-						<ListItem>
-							<ListItemText
-								primary="Auto Save"
-								secondary="Automatically save changes as you type"
+					<ListItem>
+						<ListItemText
+							primary="Auto Save"
+							secondary="Automatically save changes as you type"
+						/>
+						<ListItemSecondaryAction>
+							<Switch
+								edge="end"
+								checked={autoSave}
+								onChange={(e) => updateSetting("autoSave", e.target.checked)}
 							/>
-							<ListItemSecondaryAction>
-								<Switch
-									edge="end"
-									checked={autoSave}
-									onChange={(e) => updateSetting("autoSave", e.target.checked)}
-								/>
-							</ListItemSecondaryAction>
-						</ListItem>
+						</ListItemSecondaryAction>
+					</ListItem>
 
-						<Divider />
+					<Divider />
 
-						<ListItem>
-							<ListItemText
-								primary="Compact Mode"
-								secondary="Use compact layout with reduced spacing"
+					<ListItem>
+						<ListItemText
+							primary="Compact Mode"
+							secondary="Use compact layout with reduced spacing"
+						/>
+						<ListItemSecondaryAction>
+							<Switch
+								edge="end"
+								checked={compactMode}
+								onChange={(e) =>
+									updateSetting("compactMode", e.target.checked)
+								}
 							/>
-							<ListItemSecondaryAction>
-								<Switch
-									edge="end"
-									checked={compactMode}
-									onChange={(e) =>
-										updateSetting("compactMode", e.target.checked)
-									}
-								/>
-							</ListItemSecondaryAction>
-						</ListItem>
-					</List>
-				</Paper>
-			</Box>
-		</AppLayout>
+						</ListItemSecondaryAction>
+					</ListItem>
+				</List>
+			</Paper>
+		</Box>
 	);
 };
 

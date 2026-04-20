@@ -27,18 +27,27 @@ interface AppSidebarProps {
 	mobileOpen: boolean;
 	onToggle: () => void;
 	drawerWidth: number;
+	collapsed: boolean;
 }
 
 const AppSidebar: React.FC<AppSidebarProps> = ({
 	mobileOpen,
 	onToggle,
 	drawerWidth,
+	collapsed,
 }) => {
 	const appName = import.meta.env.VITE_APP_NAME || "App";
+	const abbreviation = appName
+		.split(/[\s-]+/)
+		.map((w: string) => w[0]?.toUpperCase() ?? "")
+		.join("")
+		.slice(0, 2);
 	const navigate = useNavigate();
 	const ability = useAbility();
 	const user = useAuthStore((state) => state.user);
 	const logout = useAuthStore((state) => state.logout);
+	const collapsedWidth = 56;
+	const effectiveWidth = collapsed ? collapsedWidth : drawerWidth;
 
 	const handleLogout = () => {
 		logout();
@@ -56,7 +65,7 @@ const AppSidebar: React.FC<AppSidebarProps> = ({
 				}}
 			>
 				<Typography variant="h6" component="div">
-					{appName}
+					{collapsed ? abbreviation : appName}
 				</Typography>
 			</Box>
 			<List sx={{ flexGrow: 1 }}>
@@ -64,14 +73,14 @@ const AppSidebar: React.FC<AppSidebarProps> = ({
 					<ListItemIcon>
 						<DashboardIcon />
 					</ListItemIcon>
-					<ListItemText primary="Dashboard" />
+					{!collapsed && <ListItemText primary="Dashboard" />}
 				</ListItemButton>
 				<Can I="read" a="users" ability={ability}>
 					<ListItemButton onClick={() => navigate("/users")}>
 						<ListItemIcon>
 							<PeopleIcon />
 						</ListItemIcon>
-						<ListItemText primary="Users" />
+						{!collapsed && <ListItemText primary="Users" />}
 					</ListItemButton>
 				</Can>
 				<Can I="read" a="settings" ability={ability}>
@@ -79,7 +88,7 @@ const AppSidebar: React.FC<AppSidebarProps> = ({
 						<ListItemIcon>
 							<SettingsIcon />
 						</ListItemIcon>
-						<ListItemText primary="Settings" />
+						{!collapsed && <ListItemText primary="Settings" />}
 					</ListItemButton>
 				</Can>
 			</List>
@@ -97,34 +106,40 @@ const AppSidebar: React.FC<AppSidebarProps> = ({
 						px: 2,
 						minHeight: 48,
 						"&.Mui-expanded": { minHeight: 48 },
+						display: "flex",
+						alignItems: "center",
 					}}
 				>
-					<ListItemIcon sx={{ minWidth: 40 }}>
-						<AccountCircleIcon />
-					</ListItemIcon>
-					<Box>
-						<Typography variant="body2" sx={{ fontWeight: "bold" }}>
-							{user?.name || user?.username || "User"}
-						</Typography>
-						{user?.username && (
-							<Typography variant="caption" color="text.secondary">
-								@{user.username}
+					{!collapsed && (
+						<ListItemIcon sx={{ minWidth: 40 }}>
+							<AccountCircleIcon />
+						</ListItemIcon>
+					)}
+					{!collapsed && (
+						<Box>
+							<Typography variant="body2" sx={{ fontWeight: "bold" }}>
+								{user?.name || user?.username || "User"}
 							</Typography>
-						)}
-					</Box>
+							{user?.username && (
+								<Typography variant="caption" color="text.secondary">
+									@{user.username}
+								</Typography>
+							)}
+						</Box>
+					)}
 				</AccordionSummary>
 				<AccordionDetails sx={{ p: 0 }}>
-					<ListItemButton onClick={() => navigate("/profile")} sx={{ pl: 6, py: 1 }}>
+					<ListItemButton onClick={() => navigate("/profile")} sx={{ py: 1 }}>
 						<ListItemIcon>
 							<AccountCircleIcon fontSize="small" />
 						</ListItemIcon>
-						<ListItemText primary="Profile" />
+						{!collapsed && <ListItemText primary="Profile" />}
 					</ListItemButton>
-					<ListItemButton onClick={handleLogout} sx={{ pl: 6, py: 1 }}>
+					<ListItemButton onClick={handleLogout} sx={{ py: 1 }}>
 						<ListItemIcon>
 							<LogoutIcon fontSize="small" />
 						</ListItemIcon>
-						<ListItemText primary="Logout" />
+						{!collapsed && <ListItemText primary="Logout" />}
 					</ListItemButton>
 				</AccordionDetails>
 			</Accordion>
@@ -135,7 +150,7 @@ const AppSidebar: React.FC<AppSidebarProps> = ({
 		<Box
 			component="nav"
 			sx={{
-				width: { md: drawerWidth },
+				width: { md: effectiveWidth },
 				flexShrink: { md: 0 },
 				position: "relative",
 			}}
@@ -158,7 +173,10 @@ const AppSidebar: React.FC<AppSidebarProps> = ({
 				variant="permanent"
 				sx={{
 					display: { xs: "none", md: "block" },
-					"& .MuiDrawer-paper": { boxSizing: "border-box", width: drawerWidth },
+					"& .MuiDrawer-paper": {
+						boxSizing: "border-box",
+						width: effectiveWidth,
+					},
 				}}
 				open
 			>

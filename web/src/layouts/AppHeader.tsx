@@ -11,9 +11,10 @@ interface AppHeaderProps {
   onMenuClick: () => void;
   drawerWidth: number;
   currentTab: string;
+  onCollapseClick: () => void;
 }
 
-const AppHeader: React.FC<AppHeaderProps> = ({ onMenuClick, drawerWidth, currentTab }) => {
+const AppHeader: React.FC<AppHeaderProps> = ({ onMenuClick, drawerWidth, currentTab, onCollapseClick }) => {
   return (
     <AppBar
       position="fixed"
@@ -23,12 +24,22 @@ const AppHeader: React.FC<AppHeaderProps> = ({ onMenuClick, drawerWidth, current
       }}
     >
       <Toolbar>
+        {/* Mobile menu button (hidden on md+) */}
         <IconButton
           color="inherit"
           aria-label="open drawer"
           edge="start"
           onClick={onMenuClick}
           sx={{ mr: 2, display: { md: 'none' } }}
+        >
+          <MenuIcon />
+        </IconButton>
+        {/* Desktop collapse button (visible on md+) */}
+        <IconButton
+          color="inherit"
+          aria-label="toggle sidebar"
+          onClick={onCollapseClick}
+          sx={{ mr: 2, display: { xs: 'none', md: 'inline-flex' } }}
         >
           <MenuIcon />
         </IconButton>
