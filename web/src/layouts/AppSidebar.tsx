@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import {
 	Drawer,
@@ -8,15 +8,17 @@ import {
 	Box,
 	ListItemButton,
 	Typography,
-	Menu,
-	MenuItem,
 	Divider,
+	Accordion,
+	AccordionSummary,
+	AccordionDetails,
 } from "@mui/material";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import SettingsIcon from "@mui/icons-material/Settings";
 import PeopleIcon from "@mui/icons-material/People";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import LogoutIcon from "@mui/icons-material/Logout";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { Can } from "@casl/react";
 import { useAbility } from "../config/AbilityProvider";
 import { useAuthStore } from "../store/useAuthStore";
@@ -38,19 +40,7 @@ const AppSidebar: React.FC<AppSidebarProps> = ({
 	const user = useAuthStore((state) => state.user);
 	const logout = useAuthStore((state) => state.logout);
 
-	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-	const open = Boolean(anchorEl);
-
-	const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
-		setAnchorEl(event.currentTarget);
-	};
-
-	const handleMenuClose = () => {
-		setAnchorEl(null);
-	};
-
 	const handleLogout = () => {
-		handleMenuClose();
 		logout();
 		navigate("/login");
 	};
@@ -94,57 +84,50 @@ const AppSidebar: React.FC<AppSidebarProps> = ({
 				</Can>
 			</List>
 			<Divider />
-			<Box>
-				<ListItemButton
-					onClick={handleMenuClick}
+			<Accordion
+				sx={{
+					boxShadow: "none",
+					"&:before": { display: "none" },
+					"&.Mui-expanded": { margin: 0 },
+				}}
+			>
+				<AccordionSummary
+					expandIcon={<ExpandMoreIcon />}
 					sx={{
-						borderRadius: 0,
 						px: 2,
-						"&:hover": {
-							backgroundColor: "action.hover",
-						},
+						minHeight: 48,
+						"&.Mui-expanded": { minHeight: 48 },
 					}}
 				>
-					<ListItemIcon>
+					<ListItemIcon sx={{ minWidth: 40 }}>
 						<AccountCircleIcon />
 					</ListItemIcon>
-					<ListItemText
-						primary={user?.name || user?.username || "User"}
-						secondary={user?.username ? `@${user.username}` : ""}
-					/>
-				</ListItemButton>
-				<Menu
-					anchorEl={anchorEl}
-					open={open}
-					onClose={handleMenuClose}
-					anchorOrigin={{
-						vertical: "top",
-						horizontal: "left",
-					}}
-					transformOrigin={{
-						vertical: "bottom",
-						horizontal: "left",
-					}}
-				>
-					<MenuItem
-						onClick={() => {
-							handleMenuClose();
-							navigate("/profile");
-						}}
-					>
+					<Box>
+						<Typography variant="body2" sx={{ fontWeight: "bold" }}>
+							{user?.name || user?.username || "User"}
+						</Typography>
+						{user?.username && (
+							<Typography variant="caption" color="text.secondary">
+								@{user.username}
+							</Typography>
+						)}
+					</Box>
+				</AccordionSummary>
+				<AccordionDetails sx={{ p: 0 }}>
+					<ListItemButton onClick={() => navigate("/profile")} sx={{ pl: 6, py: 1 }}>
 						<ListItemIcon>
 							<AccountCircleIcon fontSize="small" />
 						</ListItemIcon>
-						Profile
-					</MenuItem>
-					<MenuItem onClick={handleLogout}>
+						<ListItemText primary="Profile" />
+					</ListItemButton>
+					<ListItemButton onClick={handleLogout} sx={{ pl: 6, py: 1 }}>
 						<ListItemIcon>
 							<LogoutIcon fontSize="small" />
 						</ListItemIcon>
-						Logout
-					</MenuItem>
-				</Menu>
-			</Box>
+						<ListItemText primary="Logout" />
+					</ListItemButton>
+				</AccordionDetails>
+			</Accordion>
 		</Box>
 	);
 
