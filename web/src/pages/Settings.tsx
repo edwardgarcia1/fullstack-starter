@@ -123,9 +123,7 @@ const Settings: React.FC = () => {
 							<Switch
 								edge="end"
 								checked={compactMode}
-								onChange={(e) =>
-									updateSetting("compactMode", e.target.checked)
-								}
+								onChange={(e) => updateSetting("compactMode", e.target.checked)}
 							/>
 						</ListItemSecondaryAction>
 					</ListItem>
