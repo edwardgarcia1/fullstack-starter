@@ -1,14 +1,6 @@
 import React from 'react';
-import { Box, Typography, CircularProgress, Skeleton } from '@mui/material';
-import { keyframes } from '@mui/material/styles';
+import { Box, Skeleton } from '@mui/material';
 import AppLayout from '../layouts/AppLayout';
-
-// Define keyframe animation for floating effect
-const float = keyframes`
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-  100% { transform: translateY(0px); }
-`;
 
 const Loading: React.FC = () => {
   return (
@@ -17,32 +9,25 @@ const Loading: React.FC = () => {
         sx={{
           display: 'flex',
           flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexGrow: 1,
-          padding: 4,
+          gap: 2,
+          width: '100%',
+          height: '100%',
         }}
       >
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: 2,
-            animation: `${float} 2s ease-in-out infinite`,
-          }}
-        >
-          <CircularProgress size={60} thickness={4} />
-          <Typography variant="h5" sx={{ fontWeight: 'medium', color: 'text.secondary' }}>
-            Loading...
-          </Typography>
+        {/* Header section */}
+        <Box sx={{ display: 'flex', gap: 2, mb: 1 }}>
+          <Skeleton variant="rectangular" height={40} sx={{ borderRadius: 1, flex: 1 }} />
+          <Skeleton variant="rectangular" height={40} sx={{ borderRadius: 1, width: 100 }} />
         </Box>
-
-        <Box sx={{ width: '100%', maxWidth: 400, mt: 6, gap: 2, display: 'flex', flexDirection: 'column' }}>
-          <Skeleton variant="rectangular" height={40} sx={{ borderRadius: 1 }} />
-          <Skeleton variant="rectangular" height={40} sx={{ borderRadius: 1 }} />
-          <Skeleton variant="rectangular" height={40} sx={{ borderRadius: 1 }} />
-          <Skeleton variant="rectangular" height={100} sx={{ borderRadius: 1 }} />
+        
+        {/* Main content area */}
+        <Skeleton variant="rectangular" height={200} sx={{ borderRadius: 1, mb: 2 }} />
+        
+        {/* Cards section */}
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <Skeleton variant="rectangular" height={120} sx={{ borderRadius: 1, flex: 1 }} />
+          <Skeleton variant="rectangular" height={120} sx={{ borderRadius: 1, flex: 1 }} />
+          <Skeleton variant="rectangular" height={120} sx={{ borderRadius: 1, flex: 1 }} />
         </Box>
       </Box>
     </AppLayout>
