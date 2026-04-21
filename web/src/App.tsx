@@ -11,6 +11,7 @@ import { useAuthStore } from "./store/useAuthStore";
 import { AbilityProvider } from "./config/AbilityProvider";
 import AppLayout from "./layouts/AppLayout";
 import Loading from "./pages/Loading";
+import { LinearProgress, Box } from "@mui/material";
 
 // 1. Lazy Load Pages for better performance (Code Splitting)
 const Login = lazy(() => import("./pages/Login"));
@@ -62,7 +63,16 @@ const GuestRoute: React.FC = () => {
 	const { user, isLoading } = useAuthStore();
 
 	if (isLoading) {
-		return <Loading />;
+		return (
+			<Box
+				display="flex"
+				justifyContent="center"
+				alignItems="center"
+				height="100vh"
+			>
+				<LinearProgress aria-label="Loading…" />
+			</Box>
+		);
 	}
 
 	if (user) {
@@ -72,30 +82,78 @@ const GuestRoute: React.FC = () => {
 	return <Outlet />;
 };
 
+const GuestSuspense: React.FC<{ children: React.ReactNode }> = ({
+	children,
+}) => <Suspense fallback={null}>{children}</Suspense>;
+
+const AppSuspense: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+	<Suspense fallback={<Loading />}>{children}</Suspense>
+);
+
 const AppRoutes: React.FC = () => {
 	return (
-		<Suspense fallback={<Loading />}>
-			<Routes>
-				{/* Public/Guest Routes */}
-				<Route element={<GuestRoute />}>
-					<Route path="/login" element={<Login />} />
-					<Route path="/register" element={<Register />} />
-				</Route>
+		<Routes>
+			{/* Public/Guest Routes */}
+			<Route element={<GuestRoute />}>
+				<Route
+					path="/login"
+					element={
+						<GuestSuspense>
+							<Login />
+						</GuestSuspense>
+					}
+				/>
+				<Route
+					path="/register"
+					element={
+						<GuestSuspense>
+							<Register />
+						</GuestSuspense>
+					}
+				/>
+			</Route>
 
-				{/* Protected Routes */}
-				<Route element={<ProtectedRoute />}>
-					<Route element={<AuthenticatedLayout />}>
-						<Route path="/" element={<Home />} />
-						<Route path="/users" element={<Users />} />
-						<Route path="/settings" element={<Settings />} />
-						<Route path="/profile" element={<Profile />} />
-					</Route>
+			{/* Protected Routes */}
+			<Route element={<ProtectedRoute />}>
+				<Route element={<AuthenticatedLayout />}>
+					<Route
+						path="/"
+						element={
+							<AppSuspense>
+								<Home />
+							</AppSuspense>
+						}
+					/>
+					<Route
+						path="/users"
+						element={
+							<AppSuspense>
+								<Users />
+							</AppSuspense>
+						}
+					/>
+					<Route
+						path="/settings"
+						element={
+							<AppSuspense>
+								<Settings />
+							</AppSuspense>
+						}
+					/>
+					<Route
+						path="/profile"
+						element={
+							<AppSuspense>
+								<Profile />
+							</AppSuspense>
+						}
+					/>
 				</Route>
+			</Route>
 
-				{/* Catch-all */}
-				<Route path="*" element={<Navigate to="/" replace />} />
-			</Routes>
-		</Suspense>
+			{/* Catch-all */}
+			<Route path="*" element={<Navigate to="/" replace />} />
+		</Routes>
 	);
 };
 
