@@ -108,10 +108,17 @@ const Users: React.FC = () => {
 
 	const sortedUsers = useMemo(() => {
 		return [...users].sort((a, b) => {
-			if (a[orderBy] < b[orderBy]) {
+			const aValue = a[orderBy];
+			const bValue = b[orderBy];
+
+			// Normalize strings to lowercase for case-insensitive sorting
+			const aStr = typeof aValue === "string" ? aValue.toLowerCase() : aValue;
+			const bStr = typeof bValue === "string" ? bValue.toLowerCase() : bValue;
+
+			if (aStr < bStr) {
 				return order === "asc" ? -1 : 1;
 			}
-			if (a[orderBy] > b[orderBy]) {
+			if (aStr > bStr) {
 				return order === "asc" ? 1 : -1;
 			}
 			return 0;
@@ -158,11 +165,39 @@ const Users: React.FC = () => {
 										<TableCell
 											key={headCell.id}
 											padding={headCell.disablePadding ? "none" : "normal"}
+											sortDirection={orderBy === headCell.id ? order : false}
 										>
 											{headCell.id === "select" ? (
-												<Checkbox color="primary" disabled />
+												loading ? (
+													<Skeleton
+														variant="rectangular"
+														width={24}
+														height={24}
+														sx={{ mx: 1 }}
+													/>
+												) : (
+													<Checkbox
+														color="primary"
+														indeterminate={
+															selected.length > 0 &&
+															selected.length < users.length
+														}
+														checked={
+															users.length > 0 &&
+															selected.length === users.length
+														}
+														onChange={handleSelectAllClick}
+														aria-label="select all users"
+													/>
+												)
 											) : (
-												headCell.label
+												<TableSortLabel
+													active={orderBy === headCell.id}
+													direction={orderBy === headCell.id ? order : "asc"}
+													onClick={() => handleRequestSort(headCell.id)}
+												>
+													{headCell.label}
+												</TableSortLabel>
 											)}
 										</TableCell>
 									))}
@@ -173,7 +208,12 @@ const Users: React.FC = () => {
 									? [...Array(rowsPerPage)].map((_, index) => (
 											<TableRow key={`skeleton-${index}`}>
 												<TableCell padding="none">
-													<Skeleton variant="rectangular" width={24} height={24} />
+													<Skeleton
+														variant="rectangular"
+														width={24}
+														height={24}
+														sx={{ mx: 1 }}
+													/>
 												</TableCell>
 												<TableCell component="th" scope="row" padding="none">
 													<Skeleton variant="text" width={40} />
@@ -188,7 +228,7 @@ const Users: React.FC = () => {
 													<Skeleton variant="text" width={80} />
 												</TableCell>
 											</TableRow>
-									  ))
+										))
 									: paginatedUsers.map((user, index) => {
 											const isItemSelected = isSelected(user.id);
 											const labelId = `enhanced-table-checkbox-${index}`;
@@ -229,7 +269,7 @@ const Users: React.FC = () => {
 													</TableCell>
 												</TableRow>
 											);
-									  })}
+										})}
 								{!loading && emptyRows > 0 && (
 									<TableRow style={{ height: 53 * emptyRows }}>
 										<TableCell colSpan={5} />
@@ -247,18 +287,18 @@ const Users: React.FC = () => {
 						onRowsPerPageChange={handleChangeRowsPerPage}
 						labelRowsPerPage="Rows:"
 						sx={{
-							width: '100%',
-							display: 'flex',
-							flexDirection: { xs: 'column', sm: 'row' },
-							alignItems: 'center',
+							width: "100%",
+							display: "flex",
+							flexDirection: { xs: "column", sm: "row" },
+							alignItems: "center",
 							gap: 1,
-							'& .MuiTablePagination-toolbar': {
-								flexWrap: 'wrap',
-								justifyContent: { xs: 'center', sm: 'flex-end' }
+							"& .MuiTablePagination-toolbar": {
+								flexWrap: "wrap",
+								justifyContent: { xs: "center", sm: "flex-end" },
 							},
-							'& .MuiTablePagination-spacer': {
-								display: 'none'
-							}
+							"& .MuiTablePagination-spacer": {
+								display: "none",
+							},
 						}}
 					/>
 				</Paper>
