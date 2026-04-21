@@ -12,6 +12,12 @@ import {
 	Accordion,
 	AccordionSummary,
 	AccordionDetails,
+	Dialog,
+	DialogTitle,
+	DialogContent,
+	DialogContentText,
+	DialogActions,
+	Button,
 } from "@mui/material";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import SettingsIcon from "@mui/icons-material/Settings";
@@ -83,12 +89,23 @@ const AppSidebar: React.FC<AppSidebarProps> = ({
 		}
 	};
 
-	const handleLogout = () => {
+	const [logoutDialogOpen, setLogoutDialogOpen] = React.useState(false);
+
+	const handleLogoutClick = () => {
+		setLogoutDialogOpen(true);
+	};
+
+	const handleLogoutConfirm = () => {
+		setLogoutDialogOpen(false);
 		logout();
 		navigate("/login");
 		if (mobileOpen) {
 			onToggle();
 		}
+	};
+
+	const handleLogoutCancel = () => {
+		setLogoutDialogOpen(false);
 	};
 
 	const drawer = (
@@ -172,12 +189,12 @@ const AppSidebar: React.FC<AppSidebarProps> = ({
 						</ListItemIcon>
 						{!collapsed && <ListItemText primary="Profile" />}
 					</ListItemButton>
-					<ListItemButton onClick={handleLogout} sx={{ py: 1 }}>
-						<ListItemIcon>
-							<LogoutIcon fontSize="small" />
-						</ListItemIcon>
-						{!collapsed && <ListItemText primary="Logout" />}
-					</ListItemButton>
+				<ListItemButton onClick={handleLogoutClick} sx={{ py: 1 }}>
+					<ListItemIcon>
+						<LogoutIcon fontSize="small" />
+					</ListItemIcon>
+					{!collapsed && <ListItemText primary="Logout" />}
+				</ListItemButton>
 				</AccordionDetails>
 			</Accordion>
 		</Box>
@@ -236,6 +253,25 @@ const AppSidebar: React.FC<AppSidebarProps> = ({
 			>
 				{drawer}
 			</Drawer>
+			<Dialog
+				open={logoutDialogOpen}
+				onClose={handleLogoutCancel}
+				aria-labelledby="logout-dialog-title"
+				aria-describedby="logout-dialog-description"
+			>
+				<DialogTitle id="logout-dialog-title">Confirm Logout</DialogTitle>
+				<DialogContent>
+					<DialogContentText id="logout-dialog-description">
+						Are you sure you want to logout?
+					</DialogContentText>
+				</DialogContent>
+				<DialogActions>
+					<Button onClick={handleLogoutCancel}>Cancel</Button>
+					<Button onClick={handleLogoutConfirm} color="error" autoFocus>
+						Logout
+					</Button>
+				</DialogActions>
+			</Dialog>
 		</Box>
 	);
 };
