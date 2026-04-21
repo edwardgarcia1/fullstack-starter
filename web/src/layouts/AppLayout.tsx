@@ -6,12 +6,13 @@ import AppSidebar from './AppSidebar';
 interface AppLayoutProps {
   children: React.ReactNode;
   currentTab?: string;
+  isLoading?: boolean;
 }
 
 const drawerWidth = 240;
 const collapsedWidth = 56;
 
-const AppLayout: React.FC<AppLayoutProps> = ({ children, currentTab = '' }) => {
+const AppLayout: React.FC<AppLayoutProps> = ({ children, currentTab = '', isLoading = false }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(() => {
     const saved = localStorage.getItem('sidebarCollapsed');
@@ -39,6 +40,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, currentTab = '' }) => {
         drawerWidth={effectiveWidth} 
         currentTab={currentTab}
         onCollapseClick={handleCollapseToggle}
+        isLoading={isLoading}
       />
       <AppSidebar 
         mobileOpen={mobileOpen} 
