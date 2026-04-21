@@ -8,12 +8,12 @@ import {
 	TableHead,
 	TableRow,
 	Paper,
-	CircularProgress,
 	Alert,
 	Chip,
 	TablePagination,
 	Checkbox,
 	TableSortLabel,
+	Skeleton,
 } from "@mui/material";
 import { api } from "../utils/api";
 
@@ -144,11 +144,7 @@ const Users: React.FC = () => {
 
 	return (
 		<>
-			{loading ? (
-				<Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
-					<CircularProgress />
-				</Box>
-			) : error ? (
+			{error ? (
 				<Alert severity="error" sx={{ mb: 2 }}>
 					{error}
 				</Alert>
@@ -162,78 +158,79 @@ const Users: React.FC = () => {
 										<TableCell
 											key={headCell.id}
 											padding={headCell.disablePadding ? "none" : "normal"}
-											sortDirection={orderBy === headCell.id ? order : false}
 										>
 											{headCell.id === "select" ? (
-												<Checkbox
-													color="primary"
-													indeterminate={
-														selected.length > 0 &&
-														selected.length < users.length
-													}
-													checked={
-														users.length > 0 && selected.length === users.length
-													}
-													onChange={handleSelectAllClick}
-													aria-label="select all users"
-												/>
+												<Checkbox color="primary" disabled />
 											) : (
-												<TableSortLabel
-													active={orderBy === headCell.id}
-													direction={orderBy === headCell.id ? order : "asc"}
-													onClick={() => handleRequestSort(headCell.id)}
-												>
-													{headCell.label}
-												</TableSortLabel>
+												headCell.label
 											)}
 										</TableCell>
 									))}
 								</TableRow>
 							</TableHead>
 							<TableBody>
-								{paginatedUsers.map((user, index) => {
-									const isItemSelected = isSelected(user.id);
-									const labelId = `enhanced-table-checkbox-${index}`;
-
-									return (
-										<TableRow
-											hover
-											onClick={(event) => handleClick(event, user.id)}
-											role="checkbox"
-											aria-checked={isItemSelected}
-											tabIndex={-1}
-											key={user.id}
-											selected={isItemSelected}
-											sx={{ cursor: "pointer" }}
-										>
-											<TableCell padding="none">
-												<Checkbox
-													color="primary"
-													checked={isItemSelected}
-													aria-labelledby={labelId}
-												/>
-											</TableCell>
-											<TableCell
-												component="th"
-												id={labelId}
-												scope="row"
-												padding="none"
-											>
-												{user.id}
-											</TableCell>
-											<TableCell>{user.username}</TableCell>
-											<TableCell>{user.name}</TableCell>
-											<TableCell>
-												<Chip
-													label={user.role.toUpperCase()}
-													color={getRoleColor(user.role)}
-													size="small"
-												/>
-											</TableCell>
-										</TableRow>
-									);
-								})}
-								{emptyRows > 0 && (
+								{loading
+									? [...Array(rowsPerPage)].map((_, index) => (
+											<TableRow key={`skeleton-${index}`}>
+												<TableCell padding="none">
+													<Skeleton variant="rectangular" width={24} height={24} />
+												</TableCell>
+												<TableCell component="th" scope="row" padding="none">
+													<Skeleton variant="text" width={40} />
+												</TableCell>
+												<TableCell>
+													<Skeleton variant="text" width={120} />
+												</TableCell>
+												<TableCell>
+													<Skeleton variant="text" width={150} />
+												</TableCell>
+												<TableCell>
+													<Skeleton variant="text" width={80} />
+												</TableCell>
+											</TableRow>
+									  ))
+									: paginatedUsers.map((user, index) => {
+											const isItemSelected = isSelected(user.id);
+											const labelId = `enhanced-table-checkbox-${index}`;
+											return (
+												<TableRow
+													hover
+													onClick={(event) => handleClick(event, user.id)}
+													role="checkbox"
+													aria-checked={isItemSelected}
+													tabIndex={-1}
+													key={user.id}
+													selected={isItemSelected}
+													sx={{ cursor: "pointer" }}
+												>
+													<TableCell padding="none">
+														<Checkbox
+															color="primary"
+															checked={isItemSelected}
+															aria-labelledby={labelId}
+														/>
+													</TableCell>
+													<TableCell
+														component="th"
+														id={labelId}
+														scope="row"
+														padding="none"
+													>
+														{user.id}
+													</TableCell>
+													<TableCell>{user.username}</TableCell>
+													<TableCell>{user.name}</TableCell>
+													<TableCell>
+														<Chip
+															label={user.role.toUpperCase()}
+															color={getRoleColor(user.role)}
+															size="small"
+														/>
+													</TableCell>
+												</TableRow>
+											);
+									  })}
+								{!loading && emptyRows > 0 && (
 									<TableRow style={{ height: 53 * emptyRows }}>
 										<TableCell colSpan={5} />
 									</TableRow>
