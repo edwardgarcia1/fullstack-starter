@@ -1,41 +1,38 @@
-import React, { useEffect } from "react";
+import React, { useEffect, Suspense, lazy } from "react";
 import {
 	BrowserRouter as Router,
 	Routes,
 	Route,
 	Navigate,
-	useLocation,
 	Outlet,
+	useLocation,
 } from "react-router-dom";
 import { useAuthStore } from "./store/useAuthStore";
 import { AbilityProvider } from "./config/AbilityProvider";
 import AppLayout from "./layouts/AppLayout";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import Home from "./pages/Home";
-import Users from "./pages/Users";
-import Settings from "./pages/Settings";
-import Profile from "./pages/Profile";
 import Loading from "./pages/Loading";
 
-const getCurrentTab = (path: string): string => {
-	switch (path) {
-		case "/":
-			return "Dashboard";
-		case "/users":
-			return "Users";
-		case "/settings":
-			return "Settings";
-		case "/profile":
-			return "Profile";
-		default:
-			return "";
-	}
+// 1. Lazy Load Pages for better performance (Code Splitting)
+const Login = lazy(() => import("./pages/Login"));
+const Register = lazy(() => import("./pages/Register"));
+const Home = lazy(() => import("./pages/Home"));
+const Users = lazy(() => import("./pages/Users"));
+const Settings = lazy(() => import("./pages/Settings"));
+const Profile = lazy(() => import("./pages/Profile"));
+
+// 2. Mapping pathnames to tabs keeps logic data-driven and cleaner
+const TAB_MAP: Record<string, string> = {
+	"/": "Dashboard",
+	"/users": "Users",
+	"/settings": "Settings",
+	"/profile": "Profile",
 };
 
 const AuthenticatedLayout: React.FC = () => {
 	const location = useLocation();
-	const currentTab = getCurrentTab(location.pathname);
+	// Optimization: Use object lookup instead of switch statement
+	const currentTab = TAB_MAP[location.pathname] || "";
+
 	return (
 		<AppLayout currentTab={currentTab}>
 			<Outlet />
@@ -43,49 +40,62 @@ const AuthenticatedLayout: React.FC = () => {
 	);
 };
 
-const AppRoutes: React.FC = () => {
+// 3. Reusable Protected Route Component
+// Handles the loading state locally and redirects if unauthenticated
+const ProtectedRoute: React.FC = () => {
 	const { user, isLoading } = useAuthStore();
-	const isAuthenticated = !!user;
 
 	if (isLoading) {
 		return <Loading />;
 	}
 
+	if (!user) {
+		return <Navigate to="/login" replace />;
+	}
+
+	return <Outlet />;
+};
+
+// 4. Reusable Guest Route Component
+// Redirects authenticated users away from Login/Register
+const GuestRoute: React.FC = () => {
+	const { user, isLoading } = useAuthStore();
+
+	if (isLoading) {
+		return <Loading />;
+	}
+
+	if (user) {
+		return <Navigate to="/" replace />;
+	}
+
+	return <Outlet />;
+};
+
+const AppRoutes: React.FC = () => {
 	return (
-		<Routes>
-			<Route
-				path="/login"
-				element={isAuthenticated ? <Navigate to="/" replace /> : <Login />}
-			/>
-			<Route path="/register" element={<Register />} />
-			<Route element={<AuthenticatedLayout />}>
-				<Route
-					path="/"
-					element={
-						isAuthenticated ? <Home /> : <Navigate to="/login" replace />
-					}
-				/>
-				<Route
-					path="/profile"
-					element={
-						isAuthenticated ? <Profile /> : <Navigate to="/login" replace />
-					}
-				/>
-				<Route
-					path="/users"
-					element={
-						isAuthenticated ? <Users /> : <Navigate to="/login" replace />
-					}
-				/>
-				<Route
-					path="/settings"
-					element={
-						isAuthenticated ? <Settings /> : <Navigate to="/login" replace />
-					}
-				/>
-			</Route>
-			<Route path="*" element={<Navigate to="/" replace />} />
-		</Routes>
+		<Suspense fallback={<Loading />}>
+			<Routes>
+				{/* Public/Guest Routes */}
+				<Route element={<GuestRoute />}>
+					<Route path="/login" element={<Login />} />
+					<Route path="/register" element={<Register />} />
+				</Route>
+
+				{/* Protected Routes */}
+				<Route element={<ProtectedRoute />}>
+					<Route element={<AuthenticatedLayout />}>
+						<Route path="/" element={<Home />} />
+						<Route path="/users" element={<Users />} />
+						<Route path="/settings" element={<Settings />} />
+						<Route path="/profile" element={<Profile />} />
+					</Route>
+				</Route>
+
+				{/* Catch-all */}
+				<Route path="*" element={<Navigate to="/" replace />} />
+			</Routes>
+		</Suspense>
 	);
 };
 
