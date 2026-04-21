@@ -6,8 +6,8 @@ interface RateLimitEntry {
 }
 
 const rateLimitMap = new Map<string, RateLimitEntry>();
-const WINDOW_MS = 10 * 60 * 1000; // 15 minutes
-const MAX_REQUESTS = 100; // 100 requests per window
+const WINDOW_MS = 1 * 60 * 1000; // 1 minute
+const MAX_REQUESTS = 60; // 60 requests per window
 
 export const rateLimitMiddleware = (app: Elysia) =>
 	app.derive({ as: "global" }, async (ctx) => {
