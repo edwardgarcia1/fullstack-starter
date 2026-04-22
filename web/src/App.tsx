@@ -65,10 +65,12 @@ const GuestRoute: React.FC = () => {
 	if (isLoading) {
 		return (
 			<Box
-				display="flex"
-				justifyContent="center"
-				alignItems="center"
-				height="100vh"
+				sx={{
+					display: "flex",
+					justifyContent: "center",
+					alignItems: "center",
+					height: "100vh",
+				}}
 			>
 				<LinearProgress aria-label="Loading…" />
 			</Box>
@@ -87,7 +89,7 @@ const GuestSuspense: React.FC<{ children: React.ReactNode }> = ({
 }) => <Suspense fallback={null}>{children}</Suspense>;
 
 const AppSuspense: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-	<Suspense fallback={<Loading />}>{children}</Suspense>
+	<Suspense fallback={null}>{children}</Suspense>
 );
 
 const AppRoutes: React.FC = () => {
