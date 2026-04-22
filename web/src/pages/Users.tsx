@@ -15,7 +15,7 @@ import {
 	TableSortLabel,
 	Skeleton,
 } from "@mui/material";
-import { api } from "../utils/api";
+import { api } from "../services/api";
 
 interface User {
 	id: number;
