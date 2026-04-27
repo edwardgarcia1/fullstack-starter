@@ -51,7 +51,7 @@ web/
 │   ├── pages/             # Route pages (Home, Login, Users, etc.)
 │   ├── providers/         # Context providers (Theme)
 │   ├── store/             # Zustand state stores
-│   ├── utils/             # Helpers & API client
+│   ├── service/             # Helpers & API client
 │   │   └── api.ts
 │   ├── App.tsx            # Main app with routing
 │   ├── main.tsx           # Entry point
